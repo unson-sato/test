@@ -1,0 +1,162 @@
+{
+  "version": "2.8",
+  "project_name": "MV Orchestra v2.8",
+  "description": "Multi-director AI competition system for music video generation",
+
+  "phases": {
+    "0": {
+      "name": "Overall Design",
+      "description": "High-level creative direction and concept development",
+      "enabled": true,
+      "timeout_seconds": 300
+    },
+    "1": {
+      "name": "Character Design",
+      "description": "Character concepts, visual identity, and persona development",
+      "enabled": true,
+      "timeout_seconds": 300
+    },
+    "2": {
+      "name": "Section Direction",
+      "description": "Direction for individual music sections (intro, verse, chorus, etc.)",
+      "enabled": true,
+      "timeout_seconds": 300
+    },
+    "3": {
+      "name": "Clip Division",
+      "description": "Breaking down sections into individual clips/shots",
+      "enabled": true,
+      "timeout_seconds": 300
+    },
+    "4": {
+      "name": "Generation Strategy",
+      "description": "Technical parameters and generation approach for each clip",
+      "enabled": true,
+      "timeout_seconds": 300
+    },
+    "5": {
+      "name": "Real Claude Review (Optional)",
+      "description": "Optional review by actual Claude AI for quality control",
+      "enabled": false,
+      "timeout_seconds": 300
+    }
+  },
+
+  "directors": {
+    "weights": {
+      "corporate": 1.0,
+      "freelancer": 1.0,
+      "veteran": 1.0,
+      "award_winner": 1.0,
+      "newcomer": 1.0
+    },
+    "enabled_directors": [
+      "corporate",
+      "freelancer",
+      "veteran",
+      "award_winner",
+      "newcomer"
+    ],
+    "competition_mode": "weighted_average",
+    "min_consensus_score": 70.0,
+    "require_unanimous_approval": false
+  },
+
+  "evaluation": {
+    "scoring_scale": {
+      "min": 0,
+      "max": 100,
+      "passing_threshold": 60
+    },
+    "criteria": {
+      "creativity": {
+        "weight": 0.25,
+        "description": "Originality and creative innovation"
+      },
+      "technical_quality": {
+        "weight": 0.25,
+        "description": "Technical execution and production value"
+      },
+      "coherence": {
+        "weight": 0.20,
+        "description": "Narrative and visual coherence"
+      },
+      "emotional_impact": {
+        "weight": 0.20,
+        "description": "Emotional resonance and engagement"
+      },
+      "feasibility": {
+        "weight": 0.10,
+        "description": "Practical feasibility of implementation"
+      }
+    },
+    "require_feedback": true,
+    "require_suggestions": true,
+    "max_iterations_per_phase": 3
+  },
+
+  "optimization": {
+    "enabled": true,
+    "max_optimization_rounds": 5,
+    "convergence_threshold": 0.05,
+    "learning_rate": 0.1,
+    "strategies": [
+      "gradient_descent",
+      "simulated_annealing",
+      "ensemble_voting"
+    ]
+  },
+
+  "file_paths": {
+    "input_dir": "shared-workspace/input",
+    "sessions_dir": "shared-workspace/sessions",
+    "prompts_dir": ".claude/prompts_v2/evaluations",
+    "tools_dir": "tools",
+    "output_dir": "output"
+  },
+
+  "audio_analysis": {
+    "enabled": true,
+    "extract_tempo": true,
+    "extract_beats": true,
+    "extract_sections": true,
+    "extract_mood": true,
+    "sample_rate": 22050,
+    "hop_length": 512
+  },
+
+  "generation": {
+    "default_model": "stable-diffusion",
+    "default_resolution": "1024x1024",
+    "default_fps": 24,
+    "interpolation_method": "film",
+    "upscaling_enabled": false,
+    "batch_size": 4
+  },
+
+  "session": {
+    "auto_save": true,
+    "save_interval_seconds": 60,
+    "keep_history": true,
+    "max_history_entries": 100,
+    "compression_enabled": false
+  },
+
+  "logging": {
+    "level": "INFO",
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "log_to_file": true,
+    "log_file": "mvorch.log",
+    "log_to_console": true
+  },
+
+  "advanced": {
+    "parallel_processing": true,
+    "max_workers": 4,
+    "cache_enabled": true,
+    "cache_ttl_seconds": 3600,
+    "retry_on_failure": true,
+    "max_retries": 3,
+    "retry_delay_seconds": 5
+  }
+}

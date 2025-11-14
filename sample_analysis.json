@@ -1,0 +1,171 @@
+{
+  "title": "Electric Dreams",
+  "artist": "Neon Pulse",
+  "genre": "Synthwave/Electronic Pop",
+  "bpm": 125,
+  "key": "E minor",
+  "duration": 195,
+  "sample_rate": 22050,
+  "hop_length": 512,
+  "energy_profile": {
+    "average": "high",
+    "intro": "medium",
+    "verse1": "medium-high",
+    "chorus1": "high",
+    "verse2": "medium",
+    "chorus2": "high",
+    "bridge": "medium-low",
+    "chorus3": "very-high",
+    "outro": "medium"
+  },
+  "sections": [
+    {
+      "name": "intro",
+      "start": 0.0,
+      "end": 12.5,
+      "duration": 12.5,
+      "mood": "anticipatory",
+      "energy": "medium",
+      "description": "Atmospheric synth pads building tension"
+    },
+    {
+      "name": "verse1",
+      "start": 12.5,
+      "end": 35.0,
+      "duration": 22.5,
+      "mood": "introspective",
+      "energy": "medium-high",
+      "description": "Vocals enter with pulsing bassline"
+    },
+    {
+      "name": "chorus1",
+      "start": 35.0,
+      "end": 57.5,
+      "duration": 22.5,
+      "mood": "euphoric",
+      "energy": "high",
+      "description": "Full instrumentation, catchy hook"
+    },
+    {
+      "name": "verse2",
+      "start": 57.5,
+      "end": 80.0,
+      "duration": 22.5,
+      "mood": "reflective",
+      "energy": "medium",
+      "description": "Stripped back, focus on vocals"
+    },
+    {
+      "name": "chorus2",
+      "start": 80.0,
+      "end": 102.5,
+      "duration": 22.5,
+      "mood": "uplifting",
+      "energy": "high",
+      "description": "Return of full energy"
+    },
+    {
+      "name": "bridge",
+      "start": 102.5,
+      "end": 125.0,
+      "duration": 22.5,
+      "mood": "emotional",
+      "energy": "medium-low",
+      "description": "Breakdown with atmospheric elements"
+    },
+    {
+      "name": "chorus3",
+      "start": 125.0,
+      "end": 170.0,
+      "duration": 45.0,
+      "mood": "climactic",
+      "energy": "very-high",
+      "description": "Extended final chorus with variations"
+    },
+    {
+      "name": "outro",
+      "start": 170.0,
+      "end": 195.0,
+      "duration": 25.0,
+      "mood": "resolving",
+      "energy": "medium",
+      "description": "Gradual fade with ambient textures"
+    }
+  ],
+  "lyrics": {
+    "verse1": "In the neon glow of city lights, I'm searching for a sign\nElectric dreams and endless nights, your memory on my mind\nThe rhythm pulls me through the haze, a pulse I can't deny\nIn digital embrace we sway, beneath the cyber sky",
+    "chorus": "Electric dreams, they light the way\nThrough the darkness, we will stay\nIn this moment, you and me\nLost in our electric dreams\n(Dreams, dreams, electric dreams)\n(Dreams, dreams, our electric dreams)",
+    "verse2": "The bass drops like a heartbeat slow, synthwaves crash and flow\nIn this virtual paradise we know, our love begins to grow\nPixels dancing in the air, colors blend and gleam\nIn this synthetic love affair, nothing's what it seems",
+    "bridge": "And when the world fades to black\nI know you'll bring me back\nTo our electric dreams...\n(Our electric dreams...)",
+    "outro": "Electric... dreams...\nOur electric dreams..."
+  },
+  "mood": "euphoric, nostalgic, futuristic, romantic",
+  "emotional_trajectory": [
+    {"timestamp": 0, "emotion": "anticipation", "intensity": 0.5},
+    {"timestamp": 35, "emotion": "joy", "intensity": 0.85},
+    {"timestamp": 57.5, "emotion": "nostalgia", "intensity": 0.6},
+    {"timestamp": 102.5, "emotion": "longing", "intensity": 0.7},
+    {"timestamp": 125, "emotion": "euphoria", "intensity": 0.95},
+    {"timestamp": 195, "emotion": "contentment", "intensity": 0.5}
+  ],
+  "instruments": [
+    "analog synthesizer",
+    "drum machine (808-style)",
+    "electric bass (synth bass)",
+    "pad synthesizers",
+    "arpeggiator",
+    "vocoder effects",
+    "reverb and delay"
+  ],
+  "vocal_characteristics": {
+    "style": "ethereal, emotive, slightly processed",
+    "range": "alto to soprano",
+    "techniques": ["sustained notes", "layered harmonies", "vocoder sections"],
+    "emotional_delivery": "dreamy but powerful"
+  },
+  "target_demographic": {
+    "age_range": "18-35",
+    "interests": ["synthwave", "retro-futurism", "electronic music", "visual aesthetics"],
+    "cultural_references": ["80s nostalgia", "cyberpunk", "vaporwave"],
+    "platforms": ["Spotify", "YouTube", "TikTok", "SoundCloud"]
+  },
+  "visual_themes": [
+    "neon lights and cityscapes",
+    "retro-futuristic aesthetics",
+    "digital/glitch effects",
+    "night-time urban environments",
+    "VHS/analog video aesthetics",
+    "geometric patterns",
+    "pink and blue color palettes"
+  ],
+  "recommended_mv_elements": {
+    "color_palette": ["#FF006E", "#3A86FF", "#8338EC", "#FB5607", "#FFBE0B"],
+    "visual_style": "Synthwave aesthetic with modern production values",
+    "narrative_suggestions": [
+      "Love story in a neon-lit city",
+      "Journey through digital/virtual world",
+      "Nostalgia for the future"
+    ],
+    "key_visual_moments": [
+      "Intro: Slow reveal of neon cityscape",
+      "First chorus: Explosive color and movement",
+      "Bridge: Intimate, stripped-back moment",
+      "Final chorus: Climactic visual spectacle"
+    ]
+  },
+  "technical_notes": {
+    "tempo_variations": "Consistent 125 BPM throughout",
+    "dynamic_range": "Wide, from quiet verses to loud choruses",
+    "production_style": "Clean, polished, with vintage synth warmth",
+    "mix_characteristics": "Spacious, with heavy use of reverb and delay"
+  },
+  "analysis_metadata": {
+    "analyzed_at": "2025-11-14T10:30:00",
+    "analyzer_version": "2.8",
+    "confidence_scores": {
+      "bpm_detection": 0.98,
+      "section_detection": 0.92,
+      "mood_analysis": 0.87
+    }
+  }
+}

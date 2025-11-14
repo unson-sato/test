@@ -1,0 +1,286 @@
+{
+  "metadata": {
+    "title": "Demo Song",
+    "artist": "Demo Artist",
+    "duration": 180.0,
+    "bpm": 120,
+    "key": "C major",
+    "created_at": "2025-11-14T16:57:52.402944",
+    "source_audio": "demo_song.mp3",
+    "analyzer_version": "2.8.0",
+    "analysis_method": "heuristic"
+  },
+  "sections": [
+    {
+      "name": "intro",
+      "start_time": 0.0,
+      "end_time": 15.0,
+      "type": "intro",
+      "mood": "mysterious",
+      "energy": 0.3
+    },
+    {
+      "name": "verse",
+      "start_time": 15.0,
+      "end_time": 45.0,
+      "type": "verse",
+      "mood": "introspective",
+      "energy": 0.5
+    },
+    {
+      "name": "chorus",
+      "start_time": 45.0,
+      "end_time": 75.0,
+      "type": "chorus",
+      "mood": "euphoric",
+      "energy": 0.9
+    },
+    {
+      "name": "verse",
+      "start_time": 75.0,
+      "end_time": 105.0,
+      "type": "verse",
+      "mood": "introspective",
+      "energy": 0.5
+    },
+    {
+      "name": "chorus",
+      "start_time": 105.0,
+      "end_time": 135.0,
+      "type": "chorus",
+      "mood": "euphoric",
+      "energy": 1.0
+    },
+    {
+      "name": "bridge",
+      "start_time": 135.0,
+      "end_time": 165.0,
+      "type": "bridge",
+      "mood": "emotional",
+      "energy": 0.4
+    },
+    {
+      "name": "chorus",
+      "start_time": 165.0,
+      "end_time": 165.0,
+      "type": "chorus",
+      "mood": "euphoric",
+      "energy": 1.0
+    },
+    {
+      "name": "outro",
+      "start_time": 165.0,
+      "end_time": 180.0,
+      "type": "outro",
+      "mood": "resolving",
+      "energy": 0.3
+    }
+  ],
+  "beats": [
+    {
+      "time": 0.0,
+      "bar": 0,
+      "beat": 0
+    },
+    {
+      "time": 0.5,
+      "bar": 0,
+      "beat": 1
+    },
+    {
+      "time": 1.0,
+      "bar": 0,
+      "beat": 2
+    },
+    {
+      "time": 1.5,
+      "bar": 0,
+      "beat": 3
+    },
+    {
+      "time": 2.0,
+      "bar": 1,
+      "beat": 0
+    },
+    {
+      "time": 2.5,
+      "bar": 1,
+      "beat": 1
+    },
+    {
+      "time": 3.0,
+      "bar": 1,
+      "beat": 2
+    },
+    {
+      "time": 3.5,
+      "bar": 1,
+      "beat": 3
+    },
+    {
+      "time": 4.0,
+      "bar": 2,
+      "beat": 0
+    },
+    {
+      "time": 4.5,
+      "bar": 2,
+      "beat": 1
+    }
+  ],
+  "lyrics": {
+    "lines": [
+      {
+        "index": 0,
+        "text": "In the neon glow of city lights",
+        "start_time": null,
+        "end_time": null
+      },
+      {
+        "index": 1,
+        "text": "I'm searching for a sign tonight",
+        "start_time": null,
+        "end_time": null
+      },
+      {
+        "index": 2,
+        "text": "Electric dreams and endless nights",
+        "start_time": null,
+        "end_time": null
+      },
+      {
+        "index": 3,
+        "text": "Your memory shining bright",
+        "start_time": null,
+        "end_time": null
+      },
+      {
+        "index": 4,
+        "text": "Through the shadows we will dance",
+        "start_time": null,
+        "end_time": null
+      },
+      {
+        "index": 5,
+        "text": "Lost in this electric trance",
+        "start_time": null,
+        "end_time": null
+      },
+      {
+        "index": 6,
+        "text": "Take my hand, one more chance",
+        "start_time": null,
+        "end_time": null
+      },
+      {
+        "index": 7,
+        "text": "In our electric romance",
+        "start_time": null,
+        "end_time": null
+      },
+      {
+        "index": 8,
+        "text": "Lights are flashing all around",
+        "start_time": null,
+        "end_time": null
+      },
+      {
+        "index": 9,
+        "text": "Feel the rhythm, hear the sound",
+        "start_time": null,
+        "end_time": null
+      },
+      {
+        "index": 10,
+        "text": "In this moment we are found",
+        "start_time": null,
+        "end_time": null
+      },
+      {
+        "index": 11,
+        "text": "Our hearts forever bound",
+        "start_time": null,
+        "end_time": null
+      }
+    ],
+    "total_lines": 12
+  },
+  "energy_profile": [
+    {
+      "time": 0.0,
+      "energy": 0.3
+    },
+    {
+      "time": 10.0,
+      "energy": 0.3
+    },
+    {
+      "time": 20.0,
+      "energy": 0.5
+    },
+    {
+      "time": 30.0,
+      "energy": 0.5
+    },
+    {
+      "time": 40.0,
+      "energy": 0.5
+    },
+    {
+      "time": 50.0,
+      "energy": 0.9
+    },
+    {
+      "time": 60.0,
+      "energy": 0.9
+    },
+    {
+      "time": 70.0,
+      "energy": 0.9
+    },
+    {
+      "time": 80.0,
+      "energy": 0.5
+    },
+    {
+      "time": 90.0,
+      "energy": 0.5
+    },
+    {
+      "time": 100.0,
+      "energy": 0.5
+    },
+    {
+      "time": 110.0,
+      "energy": 1.0
+    },
+    {
+      "time": 120.0,
+      "energy": 1.0
+    },
+    {
+      "time": 130.0,
+      "energy": 1.0
+    },
+    {
+      "time": 140.0,
+      "energy": 0.4
+    },
+    {
+      "time": 150.0,
+      "energy": 0.4
+    },
+    {
+      "time": 160.0,
+      "energy": 0.4
+    },
+    {
+      "time": 170.0,
+      "energy": 0.3
+    },
+    {
+      "time": 180.0,
+      "energy": 0.5
+    }
+  ]
+}
