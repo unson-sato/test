@@ -385,8 +385,14 @@ class Phase2Runner:
 
             logger.info("Phase 2 completed successfully")
 
-            # TODO: Auto-trigger Emotion Target Builder (Wave 3)
-            # tools.optimization.emotion_target_builder.build_target_curve(session_id)
+            # Auto-trigger Emotion Target Builder
+            try:
+                from tools.optimization.emotion_target_builder import build_target_curve
+                logger.info("Building emotion target curve...")
+                build_target_curve(self.session_id)
+                logger.info("Emotion target curve built successfully")
+            except Exception as e:
+                logger.warning(f"Emotion target builder failed (non-critical): {e}")
 
             return results
 

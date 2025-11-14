@@ -468,8 +468,14 @@ class Phase3Runner:
 
             logger.info("Phase 3 completed successfully")
 
-            # TODO: Auto-trigger Clip Optimizer (Wave 3)
-            # tools.optimization.clip_optimizer.optimize_clips(session_id)
+            # Auto-trigger Clip Optimizer
+            try:
+                from tools.optimization.clip_optimizer import optimize_clips
+                logger.info("Optimizing clips...")
+                optimize_clips(self.session_id)
+                logger.info("Clip optimization completed successfully")
+            except Exception as e:
+                logger.warning(f"Clip optimizer failed (non-critical): {e}")
 
             return results
 
