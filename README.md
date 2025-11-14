@@ -140,9 +140,14 @@ pip install librosa scipy numpy
 To use actual Claude API instead of mock evaluations:
 
 ```bash
+# Install the Anthropic SDK
 pip install anthropic
+
+# Set your API key
 export ANTHROPIC_API_KEY="your-api-key"
 ```
+
+**Get your API key**: https://console.anthropic.com/
 
 For detailed installation instructions, see [INSTALL.md](INSTALL.md).
 
@@ -197,6 +202,84 @@ winner_concept = session.get_phase_data(0)['winner']
 For more usage examples, see:
 - [USER_GUIDE.md](USER_GUIDE.md) - Complete user guide
 - [examples/](examples/) - Code examples
+
+---
+
+## Using Real AI Evaluations
+
+By default, MV Orchestra uses **mock evaluations** (no API costs, perfect for learning and development). To use real Claude AI evaluations:
+
+### Setup
+
+1. **Install anthropic package**
+   ```bash
+   pip install anthropic
+   ```
+
+2. **Get API key**
+   - Sign up at https://console.anthropic.com/
+   - Generate an API key
+   - Set environment variable:
+     ```bash
+     export ANTHROPIC_API_KEY="your-key-here"
+     ```
+
+3. **Run in real mode**
+   ```bash
+   python3 run_all_phases.py my_project --real-mode
+   ```
+
+### Testing Real AI
+
+Test with a single evaluation:
+```bash
+python3 test_real_ai.py
+```
+
+Test with all 5 directors:
+```bash
+python3 test_real_ai.py --all
+```
+
+### Cost Estimates
+
+- **Single evaluation**: ~$0.01-0.05
+- **Complete session** (Phases 0-4): ~$0.50-2.00
+  - 5 directors × 5 phases = 25 evaluations
+  - Cost varies based on proposal complexity
+- **Phase 5 review** (optional): +$0.50
+
+**Tips to minimize costs:**
+- Use mock mode for development and testing
+- Use real mode only for final production runs
+- Start with `test_real_ai.py` to verify setup
+- Monitor API usage in Anthropic console
+
+### How It Works
+
+Real AI mode:
+1. Loads director-specific evaluation criteria from `.claude/prompts_v2/evaluation_*.md`
+2. Formats prompts with proposal context
+3. Calls Claude API (claude-sonnet-4-5 model)
+4. Parses JSON responses with scores, feedback, and suggestions
+5. Falls back to mock mode on any errors
+
+The system uses 30 expert prompts (5 directors × 6 phases) to ensure authentic, personality-driven evaluations.
+
+### Troubleshooting
+
+**"ANTHROPIC_API_KEY not set"**
+- Make sure you exported the environment variable
+- Check: `echo $ANTHROPIC_API_KEY`
+
+**"anthropic package not installed"**
+- Run: `pip install anthropic`
+- Verify: `python3 -c "import anthropic; print(anthropic.__version__)"`
+
+**API errors**
+- Check API key is valid at https://console.anthropic.com/
+- Verify you have credits/billing set up
+- System automatically falls back to mock mode on errors
 
 ---
 

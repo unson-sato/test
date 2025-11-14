@@ -37,7 +37,7 @@
 # ------------------------------------------------------------------------------
 # For using actual Claude API instead of mock evaluations
 
-# anthropic>=0.18.0        # Anthropic Claude API client
+anthropic>=0.34.0        # Anthropic Claude API client
 
 # Requires ANTHROPIC_API_KEY environment variable
 

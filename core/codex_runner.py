@@ -271,7 +271,7 @@ class CodexRunner:
                         director_profile: DirectorProfile,
                         context: Dict[str, Any]) -> EvaluationResult:
         """
-        Execute a real AI evaluation.
+        Execute a real AI evaluation using Claude API.
 
         Args:
             request: The evaluation request
@@ -282,19 +282,206 @@ class CodexRunner:
             EvaluationResult from actual AI evaluation
 
         Note:
-            This is a placeholder for real AI integration.
-            Implement actual AI calls here when ready.
+            Falls back to mock evaluation if any errors occur.
         """
-        # TODO: Implement real AI evaluation
-        # This would involve:
-        # 1. Loading the appropriate prompt template
-        # 2. Formatting the prompt with context
-        # 3. Calling the AI service (Claude API, etc.)
-        # 4. Parsing the response
-        # 5. Extracting score, feedback, suggestions, etc.
+        try:
+            # 1. Load prompt template
+            template_path = self._get_prompt_template_path(director_profile.director_type)
+            prompt_template = self._load_prompt_template(template_path)
 
-        # For now, fall back to mock
-        return self._mock_evaluation(request, director_profile, context)
+            # 2. Format prompt with context
+            formatted_prompt = self._format_prompt(prompt_template, request, context)
+
+            # 3. Call Claude API
+            response = self._call_claude_api(formatted_prompt)
+
+            # 4. Parse response
+            evaluation_data = self._parse_evaluation_response(response)
+
+            # 5. Create EvaluationResult
+            return EvaluationResult(
+                session_id=request.session_id,
+                phase_number=request.phase_number,
+                director_type=request.director_type,
+                evaluation_type=request.evaluation_type,
+                timestamp=get_iso_timestamp(),
+                score=evaluation_data['score'],
+                feedback=evaluation_data['feedback'],
+                suggestions=evaluation_data['suggestions'],
+                highlights=evaluation_data.get('highlights', []),
+                concerns=evaluation_data.get('concerns', []),
+                raw_response=response,
+                metadata={'real_ai': True, 'director_profile': director_profile.name_en}
+            )
+
+        except Exception as e:
+            # Log error and fall back to mock
+            print(f"⚠ Real evaluation failed: {e}. Falling back to mock.")
+            return self._mock_evaluation(request, director_profile, context)
+
+    def _get_prompt_template_path(self, director_type: DirectorType) -> Path:
+        """Get path to evaluation prompt template for this director."""
+        base_dir = self.project_root / ".claude" / "prompts_v2"
+        filename = f"evaluation_{director_type.value}.md"
+        return base_dir / filename
+
+    def _load_prompt_template(self, template_path: Path) -> str:
+        """Load prompt template from file."""
+        if not template_path.exists():
+            raise FileNotFoundError(f"Template not found: {template_path}")
+        return template_path.read_text(encoding='utf-8')
+
+    def _format_prompt(self, template: str, request: EvaluationRequest,
+                      context: Dict[str, Any]) -> str:
+        """
+        Format prompt template with evaluation context.
+
+        The prompt should include:
+        - Director profile information
+        - Phase context (previous phase results)
+        - Proposals to evaluate
+        - Expected output format
+        """
+        # Build evaluation context
+        eval_context = {
+            'director_name': context['director']['name_en'],
+            'director_name_ja': context['director']['name_ja'],
+            'phase_number': request.phase_number,
+            'evaluation_type': request.evaluation_type,
+            'proposals': request.context.get('proposals', []),
+            'previous_phases': request.context.get('previous_phases', {}),
+        }
+
+        # Format the template
+        # The template already contains evaluation criteria and format
+        # We append the specific evaluation context
+        formatted = template + "\n\n" + "="*70 + "\n"
+        formatted += "## EVALUATION TASK\n\n"
+        formatted += f"**Phase**: {request.phase_number}\n"
+        formatted += f"**Evaluation Type**: {request.evaluation_type}\n\n"
+
+        formatted += "### Proposals to Evaluate\n\n"
+        if eval_context['proposals']:
+            formatted += "```json\n"
+            formatted += json.dumps(eval_context['proposals'], indent=2, ensure_ascii=False)
+            formatted += "\n```\n\n"
+        else:
+            formatted += "*No proposals provided*\n\n"
+
+        formatted += "### Your Task\n\n"
+        formatted += "Please evaluate the proposal(s) above using your evaluation criteria.\n"
+        formatted += "Return your response in the JSON format specified in the template above.\n\n"
+        formatted += "**Important**: Your response must be valid JSON matching the Output Format section.\n"
+        formatted += "Calculate the total_score by summing all weighted_scores from each criterion.\n"
+
+        return formatted
+
+    def _call_claude_api(self, prompt: str) -> str:
+        """
+        Call Claude API with the formatted prompt.
+
+        Requires ANTHROPIC_API_KEY environment variable.
+        """
+        import os
+
+        # Check for API key
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        if not api_key:
+            raise ValueError(
+                "ANTHROPIC_API_KEY environment variable not set. "
+                "Set it with: export ANTHROPIC_API_KEY='your-key'"
+            )
+
+        try:
+            import anthropic
+        except ImportError:
+            raise ImportError(
+                "anthropic package not installed. "
+                "Install it with: pip install anthropic"
+            )
+
+        # Create client
+        client = anthropic.Anthropic(api_key=api_key)
+
+        # Call API
+        message = client.messages.create(
+            model="claude-sonnet-4-5-20250929",  # Latest model
+            max_tokens=4096,
+            messages=[
+                {"role": "user", "content": prompt}
+            ]
+        )
+
+        # Extract response text
+        return message.content[0].text
+
+    def _parse_evaluation_response(self, response: str) -> Dict[str, Any]:
+        """
+        Parse Claude's response to extract evaluation data.
+
+        Expected format:
+        {
+          "total_score": 6.5,
+          "recommendation": "NEEDS REVISION",
+          "summary": "...",
+          "what_works": [...],
+          "what_needs_work": [...],
+          "honest_feedback": [...]
+        }
+        """
+        import re
+
+        # Try to extract JSON from response
+        # Claude might wrap it in markdown code blocks
+        json_match = re.search(r'```json\s*(\{.*?\})\s*```', response, re.DOTALL)
+        if json_match:
+            json_str = json_match.group(1)
+        else:
+            # Try to find raw JSON
+            json_match = re.search(r'\{.*\}', response, re.DOTALL)
+            if json_match:
+                json_str = json_match.group(0)
+            else:
+                raise ValueError("No JSON found in Claude's response")
+
+        # Parse JSON
+        data = json.loads(json_str)
+
+        # Extract evaluation data
+        # The format uses total_score, summary, what_works, what_needs_work, honest_feedback
+        score = float(data.get('total_score', 7.0)) * 10  # Convert to 0-100 scale
+
+        # Build feedback from summary and honest_feedback
+        feedback_parts = []
+        if 'summary' in data:
+            feedback_parts.append(data['summary'])
+        if 'honest_feedback' in data and data['honest_feedback']:
+            feedback_parts.append("\n\nHonest Feedback:")
+            feedback_parts.extend([f"- {item}" for item in data['honest_feedback']])
+
+        feedback = "\n".join(feedback_parts) if feedback_parts else "No feedback provided"
+
+        # Extract suggestions from what_needs_work
+        suggestions = data.get('what_needs_work', [])
+        if not suggestions and 'honest_feedback' in data:
+            suggestions = data.get('honest_feedback', [])
+
+        # Extract highlights from what_works
+        highlights = data.get('what_works', [])
+
+        # Concerns would be critical items from what_needs_work
+        concerns = []
+        if 'what_needs_work' in data and len(data['what_needs_work']) > 0:
+            # Take first 2-3 most critical items as concerns
+            concerns = data['what_needs_work'][:3]
+
+        return {
+            'score': min(max(score, 0.0), 100.0),  # Clamp to 0-100
+            'feedback': feedback,
+            'suggestions': suggestions,
+            'highlights': highlights,
+            'concerns': concerns
+        }
 
     def save_evaluation_result(self, result: EvaluationResult) -> Path:
         """
