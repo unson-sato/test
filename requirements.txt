@@ -1,0 +1,54 @@
+# MV Orchestra v2.8 - Python Dependencies
+
+# Core dependencies
+# Python 3.9+ required
+
+# Standard library modules used (no installation needed):
+# - json
+# - os
+# - pathlib
+# - datetime
+# - typing
+# - dataclasses
+# - enum
+# - uuid
+
+# External dependencies (to be added as needed)
+
+# For future AI integration
+# anthropic>=0.18.0  # Claude API client
+# openai>=1.0.0      # OpenAI API client (if used)
+
+# For audio processing (when implemented)
+# librosa>=0.10.0    # Audio analysis
+# pydub>=0.25.0      # Audio manipulation
+# scipy>=1.11.0      # Scientific computing
+
+# For video processing (when implemented)
+# opencv-python>=4.8.0  # Computer vision
+# Pillow>=10.0.0        # Image processing
+
+# For advanced features (optional)
+# aeneas              # Audio-text synchronization (requires ffmpeg)
+# openai-whisper      # Speech recognition (requires ffmpeg)
+# insightface         # Face detection/recognition
+# torch               # Deep learning (required by some optional deps)
+# clip                # CLIP model for image-text matching
+
+# System dependencies (install separately):
+# - ffmpeg: Required for audio/video processing
+#   Ubuntu/Debian: sudo apt-get install ffmpeg
+#   macOS: brew install ffmpeg
+#   Windows: Download from https://ffmpeg.org/
+
+# Development dependencies (optional)
+# pytest>=7.4.0         # Testing
+# pytest-cov>=4.1.0     # Test coverage
+# black>=23.0.0         # Code formatting
+# flake8>=6.0.0         # Linting
+# mypy>=1.5.0           # Type checking
+# isort>=5.12.0         # Import sorting
+
+# Documentation (optional)
+# sphinx>=7.0.0         # Documentation generation
+# sphinx-rtd-theme>=1.3.0  # ReadTheDocs theme
