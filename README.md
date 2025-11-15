@@ -94,7 +94,7 @@ Complete generation plan including:
 
 - Python 3.9 or higher
 - (Optional) ffmpeg for audio analysis
-- (Optional) Anthropic API key for real evaluations
+- (Optional) Claude Code for real AI evaluations
 
 ### Basic Usage
 
@@ -137,17 +137,17 @@ pip install librosa scipy numpy
 
 ### Optional: Real AI Evaluations
 
-To use actual Claude API instead of mock evaluations:
+To use actual Claude AI via Claude Code (no API costs):
 
 ```bash
-# Install the Anthropic SDK
-pip install anthropic
+# No installation needed!
+# Just run inside Claude Code environment
 
-# Set your API key
-export ANTHROPIC_API_KEY="your-api-key"
+# Use Claude Code mode
+python3 run_all_phases.py my_session --mode claudecode
 ```
 
-**Get your API key**: https://console.anthropic.com/
+**See:** `CLAUDE_CODE_GUIDE.md` for complete workflow
 
 For detailed installation instructions, see [INSTALL.md](INSTALL.md).
 
@@ -170,8 +170,8 @@ python3 run_all_phases.py my_session --analysis my_analysis.json
 # Enable validation
 python3 run_all_phases.py my_session --validate
 
-# Use real Claude API (requires API key)
-python3 run_all_phases.py my_session --real-mode
+# Use Claude Code evaluations (requires Claude Code environment)
+python3 run_all_phases.py my_session --mode claudecode
 
 # Run with Phase 5 review
 python3 run_all_phases.py my_session --phase5-mode real
@@ -209,77 +209,84 @@ For more usage examples, see:
 
 By default, MV Orchestra uses **mock evaluations** (no API costs, perfect for learning and development). To use real Claude AI evaluations:
 
-### Setup
+### Claude Code Integration (Recommended)
 
-1. **Install anthropic package**
-   ```bash
-   pip install anthropic
-   ```
+MV Orchestra v2.8 is designed to work with **Claude Code's Task tool**:
 
-2. **Get API key**
-   - Sign up at https://console.anthropic.com/
-   - Generate an API key
-   - Set environment variable:
-     ```bash
-     export ANTHROPIC_API_KEY="your-key-here"
-     ```
+**Advantages:**
+- No API costs (uses your Claude Code subscription)
+- No API key management
+- Better context awareness (Claude sees full project)
+- Natural development workflow integration
 
-3. **Run in real mode**
-   ```bash
-   python3 run_all_phases.py my_project --real-mode
-   ```
-
-### Testing Real AI
-
-Test with a single evaluation:
+**Usage:**
 ```bash
-python3 test_real_ai.py
+python3 run_all_phases.py my_session --mode claudecode
 ```
 
-Test with all 5 directors:
+**Workflow:**
+1. Pipeline exports prompts to files
+2. Process evaluations in Claude Code
+3. Results saved to files
+4. Pipeline continues automatically
+
+**Complete guide:** See `CLAUDE_CODE_GUIDE.md`
+
+### Interactive Mode (Alternative)
+
+For manual evaluation outside Claude Code:
+
 ```bash
-python3 test_real_ai.py --all
+python3 run_all_phases.py my_session --mode interactive
 ```
 
-### Cost Estimates
+This mode:
+- Displays prompts
+- Waits for you to paste JSON results
+- No automation required
 
-- **Single evaluation**: ~$0.01-0.05
-- **Complete session** (Phases 0-4): ~$0.50-2.00
-  - 5 directors × 5 phases = 25 evaluations
-  - Cost varies based on proposal complexity
-- **Phase 5 review** (optional): +$0.50
+### Mock Mode (Default)
 
-**Tips to minimize costs:**
-- Use mock mode for development and testing
-- Use real mode only for final production runs
-- Start with `test_real_ai.py` to verify setup
-- Monitor API usage in Anthropic console
+For development and testing:
+
+```bash
+python3 run_all_phases.py my_session
+# OR
+python3 run_all_phases.py my_session --mode mock
+```
+
+Uses simulated evaluations (free, no AI required).
 
 ### How It Works
 
-Real AI mode:
-1. Loads director-specific evaluation criteria from `.claude/prompts_v2/evaluation_*.md`
-2. Formats prompts with proposal context
-3. Calls Claude API (claude-sonnet-4-5 model)
-4. Parses JSON responses with scores, feedback, and suggestions
-5. Falls back to mock mode on any errors
+Real evaluation modes:
+1. Load director-specific criteria from `.claude/prompts_v2/evaluation_*.md`
+2. Format prompts with proposal context
+3. Process evaluation (via Claude Code Task or manual input)
+4. Parse JSON responses with scores, feedback, and suggestions
+5. Fall back to mock mode on errors
 
-The system uses 30 expert prompts (5 directors × 6 phases) to ensure authentic, personality-driven evaluations.
+The system uses 30 expert prompts (5 directors × 6 phases) for authentic evaluations.
 
 ### Troubleshooting
 
-**"ANTHROPIC_API_KEY not set"**
-- Make sure you exported the environment variable
-- Check: `echo $ANTHROPIC_API_KEY`
+**"No result file found"**
+- Ensure you created the result file at the expected path
+- Check file format with helper script: `tools/process_evaluation.py`
 
-**"anthropic package not installed"**
-- Run: `pip install anthropic`
-- Verify: `python3 -c "import anthropic; print(anthropic.__version__)"`
+**"Invalid JSON in result file"**
+- Validate with: `python3 -m json.tool result.json`
+- Use `tools/process_evaluation.py --validate`
 
-**API errors**
-- Check API key is valid at https://console.anthropic.com/
-- Verify you have credits/billing set up
-- System automatically falls back to mock mode on errors
+**Pipeline uses mock despite claudecode mode**
+- Result file must exist BEFORE pipeline runs that phase
+- Verify result file name matches expected format
+
+See `CLAUDE_CODE_GUIDE.md` for detailed troubleshooting.
+
+### Deprecated: Anthropic API
+
+The direct API integration was deprecated in v2.8. See `archive/anthropic_api_deprecated/` for old implementation.
 
 ---
 

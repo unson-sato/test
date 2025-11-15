@@ -154,15 +154,21 @@ For more information, see the documentation at:
 
     # Execution control
     parser.add_argument(
+        '--mode',
+        type=str,
+        choices=['mock', 'claudecode', 'interactive'],
+        default='mock',
+        help='Evaluation mode: mock|claudecode|interactive (default: mock)'
+    )
+    parser.add_argument(
         '--mock-mode',
         action='store_true',
-        default=True,
-        help='Use mock evaluations for all phases (default: True)'
+        help='DEPRECATED: Use --mode mock instead'
     )
     parser.add_argument(
         '--real-mode',
         action='store_true',
-        help='Use real AI evaluations (requires API keys)'
+        help='DEPRECATED: Use --mode claudecode instead'
     )
     parser.add_argument(
         '--validate',
@@ -192,9 +198,17 @@ For more information, see the documentation at:
 
     args = parser.parse_args()
 
-    # Handle conflicting flags
+    # Handle deprecated flags
     if args.real_mode:
-        args.mock_mode = False
+        print("⚠ Warning: --real-mode is deprecated. Use --mode claudecode instead.")
+        args.mode = 'claudecode'
+    if args.mock_mode:
+        # mock_mode defaults to True, only warn if explicitly set
+        if '--mock-mode' in sys.argv:
+            print("⚠ Warning: --mock-mode is deprecated. Use --mode mock instead.")
+        args.mode = 'mock'
+
+    # Handle other flags
     if args.no_validate:
         args.validate = False
     if args.skip_phase5:
@@ -335,7 +349,13 @@ def run_phase_with_logging(
 
     try:
         # Run the phase
-        results = runner_func(**kwargs, mock_mode=args.mock_mode)
+        # Support both old mock_mode and new mode parameter
+        if 'mock_mode' in runner_func.__code__.co_varnames:
+            # Old-style phase runner (backward compatibility)
+            results = runner_func(**kwargs, mock_mode=(args.mode == 'mock'))
+        else:
+            # New-style phase runner with mode parameter
+            results = runner_func(**kwargs, mode=args.mode)
 
         # Log winner
         if 'winner' in results:
@@ -568,8 +588,12 @@ def run_pipeline(
     logger.info("=" * 70)
     logger.info(f"Session ID: {session_id}")
     logger.info(f"Analysis: {analysis_path}")
-    logger.info(f"Mock Mode: {args.mock_mode}")
+    logger.info(f"Evaluation Mode: {args.mode}")
     logger.info(f"Validation: {args.validate}")
+    if args.mode == 'claudecode':
+        logger.info("⚠ Claude Code mode: Evaluations will be exported for manual processing")
+    elif args.mode == 'interactive':
+        logger.info("⚠ Interactive mode: You will be prompted to provide evaluations")
     logger.info("=" * 70)
 
     # Create or load session

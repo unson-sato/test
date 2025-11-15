@@ -33,13 +33,18 @@
 
 
 # ------------------------------------------------------------------------------
-# Real AI Evaluations (Optional)
+# Real AI Evaluations (DEPRECATED)
 # ------------------------------------------------------------------------------
-# For using actual Claude API instead of mock evaluations
-
-anthropic>=0.34.0        # Anthropic Claude API client
-
-# Requires ANTHROPIC_API_KEY environment variable
+# NOTE: MV Orchestra v2.8 is designed to work with Claude Code's Task tool,
+# NOT the Anthropic API directly.
+#
+# To use real AI evaluations:
+# 1. Run the system inside Claude Code environment
+# 2. Use --mode claudecode or --mode interactive
+# 3. See CLAUDE_CODE_GUIDE.md for workflow
+#
+# The Anthropic API approach has been deprecated in favor of Claude Code integration.
+# If you still need API-based evaluation, use an older version or modify codex_runner.py
 
 
 # ------------------------------------------------------------------------------

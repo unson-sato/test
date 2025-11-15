@@ -3,10 +3,15 @@ Codex Runner for MV Orchestra v2.8
 
 This module handles execution of AI evaluations for the multi-director
 competition system. It:
-- Loads prompt templates from .claude/prompts_v2/evaluations/
-- Executes evaluation logic (with mock implementation support)
+- Loads prompt templates from .claude/prompts_v2/
+- Executes evaluation logic (mock mode or Claude Code Task mode)
+- Exports prompts for Claude Code Task tool evaluation
+- Imports and processes evaluation results
 - Saves evaluation results to session directories
 - Manages director-specific evaluation contexts
+
+IMPORTANT: This is designed to work with Claude Code's Task tool,
+NOT with Anthropic API directly. See documentation for workflow.
 """
 
 from dataclasses import dataclass, field
@@ -104,19 +109,30 @@ class CodexRunner:
     Executes AI evaluations for the multi-director competition system.
 
     This class manages prompt loading, evaluation execution, and result persistence.
-    It supports both real AI evaluations and mock evaluations for testing.
+
+    Modes:
+    - mock: Simulated evaluations (default, free)
+    - claudecode: Exports prompts for Claude Code Task tool evaluation
+    - interactive: Pauses and waits for manual evaluation input
     """
 
-    def __init__(self, mock_mode: bool = False):
+    def __init__(self, mode: str = "mock"):
         """
         Initialize CodexRunner.
 
         Args:
-            mock_mode: If True, use mock evaluations instead of real AI calls
+            mode: Evaluation mode - "mock", "claudecode", or "interactive"
+                  - mock: Use simulated evaluations (default)
+                  - claudecode: Export prompts for Claude Code Task tool
+                  - interactive: Pause and wait for manual evaluation
         """
-        self.mock_mode = mock_mode
+        if mode not in ["mock", "claudecode", "interactive"]:
+            raise ValueError(f"Invalid mode: {mode}. Must be 'mock', 'claudecode', or 'interactive'")
+
+        self.mode = mode
+        self.mock_mode = (mode == "mock")  # Backward compatibility
         self.project_root = get_project_root()
-        self.prompts_dir = self.project_root / ".claude" / "prompts_v2" / "evaluations"
+        self.prompts_dir = self.project_root / ".claude" / "prompts_v2"
 
         # Ensure prompts directory exists
         ensure_dir(self.prompts_dir)
@@ -185,9 +201,10 @@ class CodexRunner:
         Returns:
             EvaluationResult containing the evaluation outcome
 
-        Note:
-            Currently uses mock implementation. Replace with actual AI calls
-            when integrating with real AI services.
+        Behavior by mode:
+        - mock: Returns simulated evaluation
+        - claudecode: Exports prompt and waits for result file
+        - interactive: Displays prompt and waits for user input
         """
         # Get director profile
         director_profile = get_director_profile(request.director_type)
@@ -195,12 +212,17 @@ class CodexRunner:
         # Prepare context
         context = self.prepare_evaluation_context(request, director_profile)
 
-        if self.mock_mode:
+        if self.mode == "mock":
             # Mock evaluation
             result = self._mock_evaluation(request, director_profile, context)
+        elif self.mode == "claudecode":
+            # Claude Code Task-based evaluation
+            result = self._claudecode_evaluation(request, director_profile, context)
+        elif self.mode == "interactive":
+            # Interactive evaluation
+            result = self._interactive_evaluation(request, director_profile, context)
         else:
-            # Real evaluation (to be implemented)
-            result = self._real_evaluation(request, director_profile, context)
+            raise ValueError(f"Unknown mode: {self.mode}")
 
         # Save result
         self.save_evaluation_result(result)
@@ -267,11 +289,17 @@ class CodexRunner:
             metadata={'mock': True, 'director_profile': director_profile.name_en}
         )
 
-    def _real_evaluation(self, request: EvaluationRequest,
-                        director_profile: DirectorProfile,
-                        context: Dict[str, Any]) -> EvaluationResult:
+    def _claudecode_evaluation(self, request: EvaluationRequest,
+                               director_profile: DirectorProfile,
+                               context: Dict[str, Any]) -> EvaluationResult:
         """
-        Execute a real AI evaluation using Claude API.
+        Execute evaluation using Claude Code Task tool.
+
+        This method:
+        1. Loads and formats the evaluation prompt
+        2. Exports it to a file for Claude Code to process
+        3. Waits for the result file to be created
+        4. Parses and returns the result
 
         Args:
             request: The evaluation request
@@ -279,10 +307,11 @@ class CodexRunner:
             context: Evaluation context
 
         Returns:
-            EvaluationResult from actual AI evaluation
+            EvaluationResult from Claude Code evaluation
 
         Note:
-            Falls back to mock evaluation if any errors occur.
+            This requires running inside Claude Code environment with Task tool access.
+            Falls back to mock evaluation if result file is not found.
         """
         try:
             # 1. Load prompt template
@@ -292,13 +321,95 @@ class CodexRunner:
             # 2. Format prompt with context
             formatted_prompt = self._format_prompt(prompt_template, request, context)
 
-            # 3. Call Claude API
-            response = self._call_claude_api(formatted_prompt)
+            # 3. Export prompt for Claude Code processing
+            prompt_file = self._export_evaluation_prompt(request, director_profile, formatted_prompt)
+
+            print(f"\n{'='*70}")
+            print(f"CLAUDE CODE EVALUATION REQUIRED")
+            print(f"{'='*70}")
+            print(f"Prompt exported to: {prompt_file}")
+            print(f"\nTo run this evaluation in Claude Code:")
+            print(f"1. Read the prompt file: {prompt_file}")
+            print(f"2. Run the evaluation (see CLAUDE_CODE_GUIDE.md)")
+            print(f"3. Save result to: {self._get_result_file_path(request, director_profile)}")
+            print(f"{'='*70}\n")
+
+            # 4. Check if result already exists
+            result_file = self._get_result_file_path(request, director_profile)
+            if result_file.exists():
+                print(f"✓ Found existing result file: {result_file}")
+                return self._import_evaluation_result(result_file, request, director_profile)
+
+            # 5. If no result file, fall back to mock (for now)
+            print(f"⚠ No result file found, using mock evaluation")
+            print(f"  To use real evaluation, create: {result_file}")
+            return self._mock_evaluation(request, director_profile, context)
+
+        except Exception as e:
+            # Log error and fall back to mock
+            print(f"⚠ Claude Code evaluation setup failed: {e}")
+            print(f"  Falling back to mock evaluation.")
+            return self._mock_evaluation(request, director_profile, context)
+
+    def _interactive_evaluation(self, request: EvaluationRequest,
+                                director_profile: DirectorProfile,
+                                context: Dict[str, Any]) -> EvaluationResult:
+        """
+        Execute evaluation with interactive user input.
+
+        This method:
+        1. Displays the evaluation prompt
+        2. Waits for user to paste JSON result
+        3. Parses and returns the result
+
+        Args:
+            request: The evaluation request
+            director_profile: The director's profile
+            context: Evaluation context
+
+        Returns:
+            EvaluationResult from user-provided evaluation
+        """
+        try:
+            # 1. Load and format prompt
+            template_path = self._get_prompt_template_path(director_profile.director_type)
+            prompt_template = self._load_prompt_template(template_path)
+            formatted_prompt = self._format_prompt(prompt_template, request, context)
+
+            # 2. Display prompt
+            print(f"\n{'='*70}")
+            print(f"INTERACTIVE EVALUATION")
+            print(f"{'='*70}")
+            print(f"Director: {director_profile.name_en}")
+            print(f"Phase: {request.phase_number}")
+            print(f"Type: {request.evaluation_type}")
+            print(f"{'='*70}\n")
+            print("PROMPT:")
+            print(formatted_prompt)
+            print(f"\n{'='*70}")
+            print("Please run this prompt through Claude and paste the JSON result below:")
+            print("(Press Enter twice when done)")
+            print(f"{'='*70}\n")
+
+            # 3. Collect user input
+            lines = []
+            blank_count = 0
+            while True:
+                line = input()
+                if not line.strip():
+                    blank_count += 1
+                    if blank_count >= 2:
+                        break
+                else:
+                    blank_count = 0
+                    lines.append(line)
+
+            response = "\n".join(lines)
 
             # 4. Parse response
             evaluation_data = self._parse_evaluation_response(response)
 
-            # 5. Create EvaluationResult
+            # 5. Create result
             return EvaluationResult(
                 session_id=request.session_id,
                 phase_number=request.phase_number,
@@ -311,12 +422,12 @@ class CodexRunner:
                 highlights=evaluation_data.get('highlights', []),
                 concerns=evaluation_data.get('concerns', []),
                 raw_response=response,
-                metadata={'real_ai': True, 'director_profile': director_profile.name_en}
+                metadata={'interactive': True, 'director_profile': director_profile.name_en}
             )
 
         except Exception as e:
-            # Log error and fall back to mock
-            print(f"⚠ Real evaluation failed: {e}. Falling back to mock.")
+            print(f"⚠ Interactive evaluation failed: {e}")
+            print(f"  Falling back to mock evaluation.")
             return self._mock_evaluation(request, director_profile, context)
 
     def _get_prompt_template_path(self, director_type: DirectorType) -> Path:
@@ -376,44 +487,89 @@ class CodexRunner:
 
         return formatted
 
-    def _call_claude_api(self, prompt: str) -> str:
+    def _export_evaluation_prompt(self, request: EvaluationRequest,
+                                   director_profile: DirectorProfile,
+                                   formatted_prompt: str) -> Path:
         """
-        Call Claude API with the formatted prompt.
+        Export evaluation prompt to file for Claude Code processing.
 
-        Requires ANTHROPIC_API_KEY environment variable.
+        Args:
+            request: The evaluation request
+            director_profile: The director's profile
+            formatted_prompt: The formatted prompt text
+
+        Returns:
+            Path to exported prompt file
         """
-        import os
+        # Create prompts export directory
+        export_dir = get_evaluations_dir(request.session_id) / "prompts"
+        ensure_dir(export_dir)
 
-        # Check for API key
-        api_key = os.environ.get("ANTHROPIC_API_KEY")
-        if not api_key:
-            raise ValueError(
-                "ANTHROPIC_API_KEY environment variable not set. "
-                "Set it with: export ANTHROPIC_API_KEY='your-key'"
-            )
+        # Create filename
+        director_name = director_profile.director_type.value
+        filename = f"phase{request.phase_number}_{director_name}_{request.evaluation_type}_prompt.txt"
+        prompt_file = export_dir / filename
 
-        try:
-            import anthropic
-        except ImportError:
-            raise ImportError(
-                "anthropic package not installed. "
-                "Install it with: pip install anthropic"
-            )
+        # Write prompt to file
+        with open(prompt_file, 'w', encoding='utf-8') as f:
+            f.write(formatted_prompt)
 
-        # Create client
-        client = anthropic.Anthropic(api_key=api_key)
+        return prompt_file
 
-        # Call API
-        message = client.messages.create(
-            model="claude-sonnet-4-5-20250929",  # Latest model
-            max_tokens=4096,
-            messages=[
-                {"role": "user", "content": prompt}
-            ]
+    def _get_result_file_path(self, request: EvaluationRequest,
+                              director_profile: DirectorProfile) -> Path:
+        """
+        Get path to result file for this evaluation.
+
+        Args:
+            request: The evaluation request
+            director_profile: The director's profile
+
+        Returns:
+            Path to result file
+        """
+        results_dir = get_evaluations_dir(request.session_id) / "results"
+        ensure_dir(results_dir)
+
+        director_name = director_profile.director_type.value
+        filename = f"phase{request.phase_number}_{director_name}_{request.evaluation_type}_result.json"
+        return results_dir / filename
+
+    def _import_evaluation_result(self, result_file: Path,
+                                   request: EvaluationRequest,
+                                   director_profile: DirectorProfile) -> EvaluationResult:
+        """
+        Import evaluation result from file.
+
+        Args:
+            result_file: Path to result file
+            request: The evaluation request
+            director_profile: The director's profile
+
+        Returns:
+            EvaluationResult parsed from file
+        """
+        # Read result file
+        result_data = read_json(str(result_file))
+
+        # Parse evaluation data
+        evaluation_data = self._parse_evaluation_response(json.dumps(result_data))
+
+        # Create result
+        return EvaluationResult(
+            session_id=request.session_id,
+            phase_number=request.phase_number,
+            director_type=request.director_type,
+            evaluation_type=request.evaluation_type,
+            timestamp=get_iso_timestamp(),
+            score=evaluation_data['score'],
+            feedback=evaluation_data['feedback'],
+            suggestions=evaluation_data['suggestions'],
+            highlights=evaluation_data.get('highlights', []),
+            concerns=evaluation_data.get('concerns', []),
+            raw_response=json.dumps(result_data, indent=2),
+            metadata={'claudecode': True, 'director_profile': director_profile.name_en}
         )
-
-        # Extract response text
-        return message.content[0].text
 
     def _parse_evaluation_response(self, response: str) -> Dict[str, Any]:
         """
