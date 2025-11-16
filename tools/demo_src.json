@@ -1,0 +1,101 @@
+{
+  "metadata": {
+    "mode_used": "heuristic",
+    "created_at": "2025-11-14T16:57:52.404213",
+    "source_audio": "demo_song.mp3",
+    "source_lyrics": "/home/user/test/tools/demo_lyrics.txt",
+    "duration": 180.0
+  },
+  "lines": [
+    {
+      "index": 0,
+      "text": "In the neon glow of city lights",
+      "start_time": 9.0,
+      "end_time": 22.5,
+      "duration": 13.5
+    },
+    {
+      "index": 1,
+      "text": "I'm searching for a sign tonight",
+      "start_time": 22.5,
+      "end_time": 36.0,
+      "duration": 13.5
+    },
+    {
+      "index": 2,
+      "text": "Electric dreams and endless nights",
+      "start_time": 36.0,
+      "end_time": 49.5,
+      "duration": 13.5
+    },
+    {
+      "index": 3,
+      "text": "Your memory shining bright",
+      "start_time": 49.5,
+      "end_time": 63.0,
+      "duration": 13.5
+    },
+    {
+      "index": 4,
+      "text": "Through the shadows we will dance",
+      "start_time": 63.0,
+      "end_time": 76.5,
+      "duration": 13.5
+    },
+    {
+      "index": 5,
+      "text": "Lost in this electric trance",
+      "start_time": 76.5,
+      "end_time": 90.0,
+      "duration": 13.5
+    },
+    {
+      "index": 6,
+      "text": "Take my hand, one more chance",
+      "start_time": 90.0,
+      "end_time": 103.5,
+      "duration": 13.5
+    },
+    {
+      "index": 7,
+      "text": "In our electric romance",
+      "start_time": 103.5,
+      "end_time": 117.0,
+      "duration": 13.5
+    },
+    {
+      "index": 8,
+      "text": "Lights are flashing all around",
+      "start_time": 117.0,
+      "end_time": 130.5,
+      "duration": 13.5
+    },
+    {
+      "index": 9,
+      "text": "Feel the rhythm, hear the sound",
+      "start_time": 130.5,
+      "end_time": 144.0,
+      "duration": 13.5
+    },
+    {
+      "index": 10,
+      "text": "In this moment we are found",
+      "start_time": 144.0,
+      "end_time": 157.5,
+      "duration": 13.5
+    },
+    {
+      "index": 11,
+      "text": "Our hearts forever bound",
+      "start_time": 157.5,
+      "end_time": 171.0,
+      "duration": 13.5
+    }
+  ],
+  "total_lines": 12,
+  "coverage": {
+    "first_line_start": 9.0,
+    "last_line_end": 171.0,
+    "total_duration": 180.0
+  }
+}
