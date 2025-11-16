@@ -1,0 +1,175 @@
+{
+  "version": "3.0.0",
+  "description": "MV Orchestra v3.0 Configuration",
+
+  "orchestrator": {
+    "quality_threshold": 70.0,
+    "max_iterations": 3,
+    "claude_cli": "claude"
+  },
+
+  "agent_executor": {
+    "max_parallel": 5,
+    "timeout_seconds": 300,
+    "retry_attempts": 2,
+    "retry_delay_seconds": 2
+  },
+
+  "phases": {
+    "phase0": {
+      "enabled": true,
+      "timeout_seconds": 60,
+      "librosa_params": {
+        "hop_length": 512,
+        "n_fft": 2048
+      }
+    },
+    "phase1_4": {
+      "enabled": true,
+      "directors": [
+        "corporate",
+        "freelancer",
+        "veteran",
+        "award_winner",
+        "newcomer"
+      ],
+      "quality_threshold": 70.0,
+      "max_iterations": 3
+    },
+    "phase5": {
+      "enabled": true,
+      "max_parallel_clips": 3,
+      "max_retries": 2,
+      "timeout_seconds": 600
+    },
+    "phase6": {
+      "enabled": true,
+      "clip_similarity_threshold": 0.75,
+      "technical_quality_threshold": 0.70,
+      "max_regeneration_attempts": 2,
+      "clip_model": "ViT-B/32"
+    },
+    "phase7": {
+      "enabled": true,
+      "max_parallel_trims": 3,
+      "transition_duration": 0.0,
+      "transition_type": "none",
+      "ffmpeg_path": "ffmpeg",
+      "ffprobe_path": "ffprobe"
+    },
+    "phase8": {
+      "enabled": true,
+      "agents": [
+        "minimalist",
+        "creative",
+        "balanced"
+      ],
+      "quality_threshold": 75.0
+    },
+    "phase9": {
+      "enabled": true,
+      "render_config": {
+        "composition_id": "MVOrchestra",
+        "width": 1920,
+        "height": 1080,
+        "fps": 30,
+        "codec": "h264",
+        "audio_codec": "aac",
+        "audio_bitrate": "320k",
+        "video_bitrate": "8M",
+        "crf": 18
+      },
+      "timeout_seconds": 1800
+    }
+  },
+
+  "mcp": {
+    "enabled": true,
+    "default_server": "kamuicode_anime",
+    "servers": {
+      "runway_gen3": {
+        "priority": 1,
+        "suitable_for": ["realistic", "cinematic", "live-action"],
+        "endpoint": "http://localhost:8000/runway",
+        "api_version": "v1",
+        "max_duration": 10,
+        "resolution": "1280x768"
+      },
+      "kamuicode_anime": {
+        "priority": 2,
+        "suitable_for": ["anime", "illustration", "stylized", "artistic"],
+        "endpoint": "http://localhost:8000/kamuicode",
+        "api_version": "v1",
+        "max_duration": 10,
+        "style_presets": ["anime", "manga", "illustration"]
+      },
+      "pika": {
+        "priority": 3,
+        "suitable_for": ["experimental", "abstract", "motion-graphics"],
+        "endpoint": "http://localhost:8000/pika",
+        "api_version": "v1",
+        "max_duration": 10
+      },
+      "default": {
+        "priority": 999,
+        "suitable_for": ["fallback"],
+        "endpoint": "http://localhost:8000/default",
+        "api_version": "v1",
+        "max_duration": 10
+      }
+    },
+    "selection_strategy": "auto",
+    "fallback_behavior": "use_default"
+  },
+
+  "clip": {
+    "enabled": false,
+    "model": "ViT-B/32",
+    "device": "cpu",
+    "batch_size": 8
+  },
+
+  "ffmpeg": {
+    "path": "ffmpeg",
+    "ffprobe_path": "ffprobe",
+    "default_codec": "h264",
+    "default_audio_codec": "aac",
+    "loglevel": "error"
+  },
+
+  "remotion": {
+    "project_dir": null,
+    "node_modules_path": null,
+    "concurrency": 1,
+    "enforce_audio_track": true,
+    "muted": false
+  },
+
+  "logging": {
+    "level": "INFO",
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "date_format": "%Y-%m-%d %H:%M:%S",
+    "file": null,
+    "console": true
+  },
+
+  "sessions": {
+    "base_dir": "sessions",
+    "auto_save": true,
+    "compression": false
+  },
+
+  "performance": {
+    "async_io": true,
+    "process_pool_size": null,
+    "thread_pool_size": null,
+    "memory_limit_mb": null
+  },
+
+  "development": {
+    "mock_mode_default": false,
+    "verbose": false,
+    "debug": false,
+    "profile": false
+  }
+}
