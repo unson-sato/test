@@ -2,20 +2,31 @@
 Agent Executor for MV Orchestra v3.0
 
 Executes director agents in parallel using subprocess + Claude CLI.
-(Minimal implementation for Phase 8)
+Supports 5 director types for Phase 1-4 design phases.
 """
 
 import asyncio
 import json
 import logging
+import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from .utils import get_project_root
 
 
 logger = logging.getLogger(__name__)
+
+
+# Director types for Phase 1-4
+PHASE_1_4_DIRECTORS = [
+    "corporate",
+    "freelancer",
+    "veteran",
+    "award_winner",
+    "newcomer"
+]
 
 
 @dataclass
@@ -32,19 +43,23 @@ class AgentExecutor:
     """
     Executes director agents using subprocess + Claude CLI.
 
-    This is a minimal implementation for Phase 8.
-    Full implementation with parallel execution will be in Phase 0-4.
+    Supports:
+    - Parallel execution of multiple directors
+    - Phase 1-4 design phases (5 directors)
+    - Phase 8 effects generation (3 agents)
     """
 
-    def __init__(self, claude_cli: str = "claude"):
+    def __init__(self, claude_cli: str = "claude", max_parallel: int = 5):
         """
         Initialize Agent Executor.
 
         Args:
             claude_cli: Path to Claude CLI executable
+            max_parallel: Maximum parallel agent executions
         """
         self.claude_cli = claude_cli
-        logger.info(f"AgentExecutor initialized: claude_cli={claude_cli}")
+        self.max_parallel = max_parallel
+        logger.info(f"AgentExecutor initialized: claude_cli={claude_cli}, max_parallel={max_parallel}")
 
     async def run_director_async(
         self,
@@ -139,3 +154,123 @@ class AgentExecutor:
             return {
                 "error": str(e)
             }
+
+    async def run_all_directors_parallel(
+        self,
+        phase_num: int,
+        context: Dict[str, Any],
+        output_dir: Path,
+        directors: Optional[List[str]] = None
+    ) -> List[AgentResult]:
+        """
+        Run all directors in parallel for a phase.
+
+        Args:
+            phase_num: Phase number (1-4)
+            context: Context data to pass to agents
+            output_dir: Output directory for agent results
+            directors: List of director types (if None, uses PHASE_1_4_DIRECTORS)
+
+        Returns:
+            List of AgentResult
+        """
+        if directors is None:
+            directors = PHASE_1_4_DIRECTORS
+
+        logger.info(f"Running {len(directors)} directors in parallel for Phase {phase_num}...")
+
+        # Create tasks for all directors
+        tasks = []
+        for director_type in directors:
+            task = self._run_director_with_timing(
+                director_type,
+                phase_num,
+                context,
+                output_dir
+            )
+            tasks.append(task)
+
+        # Execute all tasks in parallel
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        # Process results
+        agent_results = []
+        for i, result in enumerate(results):
+            director_type = directors[i]
+
+            if isinstance(result, Exception):
+                logger.error(f"  ✗ {director_type}: {result}")
+                agent_results.append(AgentResult(
+                    director_type=director_type,
+                    success=False,
+                    output={},
+                    error=str(result)
+                ))
+            elif isinstance(result, AgentResult):
+                status = "✓" if result.success else "✗"
+                logger.info(f"  {status} {director_type}: {result.execution_time:.1f}s")
+                agent_results.append(result)
+
+        # Summary
+        successful = sum(1 for r in agent_results if r.success)
+        logger.info(f"Parallel execution complete: {successful}/{len(directors)} successful")
+
+        return agent_results
+
+    async def _run_director_with_timing(
+        self,
+        director_type: str,
+        phase_num: int,
+        context: Dict[str, Any],
+        output_dir: Path
+    ) -> AgentResult:
+        """
+        Run a director with execution time tracking.
+
+        Args:
+            director_type: Type of director
+            phase_num: Phase number
+            context: Context data
+            output_dir: Output directory
+
+        Returns:
+            AgentResult with timing
+        """
+        start_time = time.time()
+
+        try:
+            output = await self.run_director_async(
+                director_type=director_type,
+                phase_num=phase_num,
+                context=context,
+                output_dir=output_dir
+            )
+
+            execution_time = time.time() - start_time
+
+            # Check if output contains error
+            if "error" in output:
+                return AgentResult(
+                    director_type=director_type,
+                    success=False,
+                    output=output,
+                    error=output["error"],
+                    execution_time=execution_time
+                )
+
+            return AgentResult(
+                director_type=director_type,
+                success=True,
+                output=output,
+                execution_time=execution_time
+            )
+
+        except Exception as e:
+            execution_time = time.time() - start_time
+            return AgentResult(
+                director_type=director_type,
+                success=False,
+                output={},
+                error=str(e),
+                execution_time=execution_time
+            )

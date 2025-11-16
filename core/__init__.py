@@ -15,12 +15,12 @@ from .utils import (
     get_iso_timestamp
 )
 
-# TODO: Orchestrator components (Phase 0-4) - to be implemented
-# from .orchestrator_agent import OrchestratorAgent
-# from .agent_executor import AgentExecutor, AgentResult
-# from .evaluation_agent import EvaluationAgent, SelectionResult
-# from .feedback_loop_manager import FeedbackLoopManager, IterationResult
-# from .pipeline_state import PipelineState
+# Orchestrator components (Phase 0-4)
+from .orchestrator_agent import OrchestratorAgent
+from .agent_executor import AgentExecutor, AgentResult, PHASE_1_4_DIRECTORS
+from .evaluation_agent import EvaluationAgent, SelectionResult
+from .feedback_loop_manager import FeedbackLoopManager, IterationResult, FeedbackLoopResult
+from .pipeline_state import PipelineState
 
 # Phase 5-9 components
 from .mcp_selector import MCPSelector
@@ -42,15 +42,17 @@ __all__ = [
     'write_json',
     'get_iso_timestamp',
 
-    # TODO: Orchestrator components (Phase 0-4)
-    # 'OrchestratorAgent',
-    # 'AgentExecutor',
-    # 'AgentResult',
-    # 'EvaluationAgent',
-    # 'SelectionResult',
-    # 'FeedbackLoopManager',
-    # 'IterationResult',
-    # 'PipelineState',
+    # Orchestrator components (Phase 0-4)
+    'OrchestratorAgent',
+    'AgentExecutor',
+    'AgentResult',
+    'PHASE_1_4_DIRECTORS',
+    'EvaluationAgent',
+    'SelectionResult',
+    'FeedbackLoopManager',
+    'IterationResult',
+    'FeedbackLoopResult',
+    'PipelineState',
 
     # Phase 5 - MCP Clip Generation
     'MCPSelector',
