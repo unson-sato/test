@@ -1,0 +1,27 @@
+# MV Orchestra - Phase 0 Requirements
+# Python 3.11+ required
+
+# Audio analysis
+librosa>=0.11.0
+soundfile>=0.12.0
+numpy>=1.26.0
+
+# API integration (for Phase 1+)
+anthropic>=0.40.0
+requests>=2.32.0
+
+# Image processing
+pillow>=11.0.0
+
+# Configuration
+pyyaml>=6.0
+
+# System requirements (must be installed separately):
+# - FFmpeg 7.0+
+# - Python 3.11+
+# - 10GB disk space
+
+# Optional (for development):
+# pytest>=8.0.0
+# black>=24.0.0
+# mypy>=1.8.0
