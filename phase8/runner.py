@@ -132,7 +132,8 @@ def run_phase8(
     # Merge effects code with partial adoptions
     final_code = generator.merge_effects_code(
         evaluation.winner_code,
-        evaluation.partial_adoptions
+        evaluation.partial_adoptions,
+        all_codes=effects_codes
     )
 
     # Save effects code to file

@@ -250,24 +250,163 @@ class VideoEditor:
 
     async def _merge_with_transitions(self, spec: MergeSpec) -> EditResult:
         """Merge clips with transitions (crossfade, fade, etc.)"""
-        # This is more complex and requires filter_complex
-        # For now, implement simple crossfade between clips
-
         if len(spec.clips) < 2:
             # No transitions needed for single clip
             return await self._concat_clips(spec)
 
         transition_dur = spec.transition_duration
+        transition_type = spec.transition_type
 
-        # Build filter_complex for crossfade
-        # Example for 2 clips: [0][1]xfade=transition=fade:duration=1:offset=5[out]
+        if transition_type == "none" or transition_dur <= 0:
+            return await self._concat_clips(spec)
+
+        # Get durations of all clips
+        durations = []
+        for clip in spec.clips:
+            dur = await self._get_video_duration(clip)
+            if dur <= 0:
+                logger.error(f"Invalid duration for clip: {clip}")
+                return EditResult(success=False, error=f"Invalid clip duration: {clip}")
+            durations.append(dur)
+
+        # Build filter_complex for transitions
+        if len(spec.clips) == 2:
+            # Simple 2-clip transition
+            filter_complex = await self._build_2clip_transition(
+                durations, transition_dur, transition_type
+            )
+        else:
+            # Multi-clip transition chain
+            filter_complex = await self._build_multiclip_transition(
+                durations, transition_dur, transition_type
+            )
+
+        # Build ffmpeg command with filter_complex
+        cmd = [
+            self.ffmpeg_path,
+            *[item for clip in spec.clips for item in ["-i", str(clip)]],  # Add all inputs
+            "-filter_complex", filter_complex,
+            "-y",
+            str(spec.output_path)
+        ]
+
+        logger.debug(f"Running ffmpeg with transitions: {' '.join(cmd)}")
+
+        process = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+
+        stdout, stderr = await process.communicate()
+
+        if process.returncode != 0:
+            error_msg = stderr.decode() if stderr else "Unknown error"
+            logger.error(f"ffmpeg transition merge failed: {error_msg}")
+            return EditResult(
+                success=False,
+                error=f"ffmpeg transition merge failed: {error_msg}"
+            )
+
+        if not spec.output_path.exists():
+            return EditResult(
+                success=False,
+                error="Output file not created"
+            )
+
+        # Get total duration
+        total_duration = await self._get_video_duration(spec.output_path)
+
+        return EditResult(
+            success=True,
+            output_path=spec.output_path,
+            duration=total_duration
+        )
+
+    async def _build_2clip_transition(
+        self,
+        durations: List[float],
+        transition_dur: float,
+        transition_type: str
+    ) -> str:
+        """
+        Build filter_complex for 2-clip transition.
+
+        Args:
+            durations: List of clip durations
+            transition_dur: Transition duration in seconds
+            transition_type: Type of transition (crossfade, fade)
+
+        Returns:
+            filter_complex string
+        """
+        offset = durations[0] - transition_dur
+
+        if transition_type == "crossfade":
+            # xfade filter for crossfade
+            return f"[0:v][1:v]xfade=transition=fade:duration={transition_dur}:offset={offset}[out];[out]"
+        elif transition_type == "fade":
+            # Simple fade out/in
+            return f"[0:v][1:v]xfade=transition=fadeblack:duration={transition_dur}:offset={offset}[out];[out]"
+        else:
+            # Default to crossfade
+            return f"[0:v][1:v]xfade=transition=fade:duration={transition_dur}:offset={offset}[out];[out]"
+
+    async def _build_multiclip_transition(
+        self,
+        durations: List[float],
+        transition_dur: float,
+        transition_type: str
+    ) -> str:
+        """
+        Build filter_complex for multi-clip transition chain.
+
+        Args:
+            durations: List of clip durations
+            transition_dur: Transition duration in seconds
+            transition_type: Type of transition (crossfade, fade)
+
+        Returns:
+            filter_complex string
+        """
+        # Build chain of xfade filters
+        # [0][1]xfade=...:offset=O1[v01];[v01][2]xfade=...:offset=O2[v02];...
+
         filter_parts = []
+        current_offset = durations[0] - transition_dur
 
-        # TODO: Implement full crossfade logic for multiple clips
-        # This is a simplified version for demonstration
+        # Determine xfade transition type
+        if transition_type == "fade":
+            xfade_type = "fadeblack"
+        else:
+            xfade_type = "fade"
 
-        logger.warning("Transitions not fully implemented, falling back to concat")
-        return await self._concat_clips(spec)
+        # First transition
+        filter_parts.append(
+            f"[0:v][1:v]xfade=transition={xfade_type}:duration={transition_dur}:offset={current_offset}[v01]"
+        )
+
+        # Subsequent transitions
+        for i in range(2, len(durations)):
+            # Calculate offset for this transition
+            # Offset is cumulative: previous clips duration minus overlaps
+            current_offset += durations[i - 1] - transition_dur
+
+            prev_label = f"v0{i - 1}" if i == 2 else f"v0{i - 1}"
+            curr_label = f"v0{i}"
+
+            filter_parts.append(
+                f"[{prev_label}][{i}:v]xfade=transition={xfade_type}:duration={transition_dur}:offset={current_offset}[{curr_label}]"
+            )
+
+        # Join all filter parts
+        filter_complex = ";".join(filter_parts)
+
+        # Output from last label
+        last_label = f"v0{len(durations) - 1}"
+        filter_complex += f";[{last_label}]"
+
+        return filter_complex
 
     async def _get_video_duration(self, video_path: Path) -> float:
         """Get video duration using ffprobe"""

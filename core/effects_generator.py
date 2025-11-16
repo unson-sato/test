@@ -292,7 +292,8 @@ class EffectsGenerator:
     def merge_effects_code(
         self,
         base_code: EffectsCode,
-        adoptions: List[Dict[str, Any]]
+        adoptions: List[Dict[str, Any]],
+        all_codes: Optional[List[EffectsCode]] = None
     ) -> str:
         """
         Merge effects code with partial adoptions.
@@ -300,24 +301,137 @@ class EffectsGenerator:
         Args:
             base_code: Base effects code (winner)
             adoptions: List of partial adoptions from other agents
+            all_codes: All effects codes (for extracting specific features)
 
         Returns:
             Merged effects code
         """
-        # For now, just return base code
-        # TODO: Implement actual code merging logic
+        if not adoptions:
+            return base_code.code
+
         logger.info(f"Merging {len(adoptions)} partial adoptions into {base_code.agent_name}'s code")
 
-        merged_code = base_code.code
+        # Extract components from base code
+        base_imports = self._extract_imports(base_code.code)
+        base_components = self._extract_components(base_code.code)
 
-        # Add comments about adoptions
-        if adoptions:
-            adoption_comments = "\n// Partial adoptions:\n"
-            for adoption in adoptions:
-                source = adoption.get("from", "unknown")
-                feature = adoption.get("feature", "unknown")
-                adoption_comments += f"// - {feature} (from {source})\n"
+        # Collect additional components from adoptions
+        additional_components = []
+        additional_imports = set(base_imports)
 
-            merged_code = adoption_comments + merged_code
+        for adoption in adoptions:
+            source = adoption.get("from", "").lower()
+            feature = adoption.get("feature", "")
 
+            # Find source code
+            source_code = None
+            if all_codes:
+                for code in all_codes:
+                    if code.agent_name.lower() == source:
+                        source_code = code
+                        break
+
+            if source_code:
+                # Extract specific component if feature name is given
+                component = self._extract_component_by_name(source_code.code, feature)
+                if component:
+                    additional_components.append({
+                        "name": feature,
+                        "code": component,
+                        "source": source
+                    })
+
+                    # Extract imports from source
+                    source_imports = self._extract_imports(source_code.code)
+                    additional_imports.update(source_imports)
+
+        # Build merged code
+        merged_parts = []
+
+        # Header comment
+        merged_parts.append("/**")
+        merged_parts.append(" * Remotion Effects for MV Orchestra")
+        merged_parts.append(f" * Base: {base_code.agent_name}")
+        if additional_components:
+            merged_parts.append(" * Partial adoptions:")
+            for comp in additional_components:
+                merged_parts.append(f" *   - {comp['name']} (from {comp['source']})")
+        merged_parts.append(" */\n")
+
+        # Imports
+        merged_parts.append("// Imports")
+        for imp in sorted(additional_imports):
+            merged_parts.append(imp)
+        merged_parts.append("")
+
+        # Base components
+        merged_parts.append("// Base effects")
+        merged_parts.append(self._extract_components_code(base_code.code))
+
+        # Additional components
+        if additional_components:
+            merged_parts.append("\n// Adopted effects")
+            for comp in additional_components:
+                merged_parts.append(f"\n// {comp['name']} (from {comp['source']})")
+                merged_parts.append(comp['code'])
+
+        merged_code = "\n".join(merged_parts)
         return merged_code
+
+    def _extract_imports(self, code: str) -> List[str]:
+        """Extract import statements from TypeScript code."""
+        import re
+        import_pattern = r'^import\s+.*?;$'
+        imports = re.findall(import_pattern, code, re.MULTILINE)
+        return imports
+
+    def _extract_components(self, code: str) -> List[str]:
+        """Extract component names from TypeScript code."""
+        import re
+        # Match: export const ComponentName or export function ComponentName
+        pattern = r'export\s+(?:const|function)\s+([A-Z][a-zA-Z0-9]+)'
+        matches = re.findall(pattern, code)
+        return matches
+
+    def _extract_components_code(self, code: str) -> str:
+        """Extract all component code (everything after imports)."""
+        import re
+        # Remove imports
+        code_without_imports = re.sub(r'^import\s+.*?;$', '', code, flags=re.MULTILINE)
+        # Remove leading empty lines
+        code_without_imports = code_without_imports.lstrip()
+        return code_without_imports
+
+    def _extract_component_by_name(self, code: str, component_name: str) -> Optional[str]:
+        """
+        Extract a specific component from TypeScript code.
+
+        Args:
+            code: Full TypeScript code
+            component_name: Name of component to extract (can be partial match)
+
+        Returns:
+            Component code or None if not found
+        """
+        import re
+
+        # Try to find component by exact name first
+        # Pattern: export const/function ComponentName = ...
+        pattern = rf'(export\s+(?:const|function)\s+{re.escape(component_name)}[^=]*=.*?)(?=\nexport|\ninterface|\ntype|\Z)'
+
+        match = re.search(pattern, code, re.DOTALL)
+        if match:
+            return match.group(1).strip()
+
+        # Try partial match (case-insensitive)
+        components = self._extract_components(code)
+        for comp in components:
+            if component_name.lower() in comp.lower():
+                pattern = rf'(export\s+(?:const|function)\s+{re.escape(comp)}[^=]*=.*?)(?=\nexport|\ninterface|\ntype|\Z)'
+                match = re.search(pattern, code, re.DOTALL)
+                if match:
+                    logger.info(f"Found partial match: {comp} for {component_name}")
+                    return match.group(1).strip()
+
+        logger.warning(f"Component '{component_name}' not found in code")
+        return None
