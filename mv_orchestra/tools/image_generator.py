@@ -18,6 +18,8 @@ from typing import Dict, List, Optional, Any
 from pathlib import Path
 import base64
 from io import BytesIO
+from PIL import Image, ImageDraw, ImageFont
+import random
 
 
 class ImageGenerator:
@@ -224,18 +226,27 @@ class ImageGenerator:
                 controlnet_type='openpose' if use_controlnet else None
             )
 
-            # Save image
+            # Save image to file
             image_path = output_path / f"scene_{i:04d}.png"
+
+            # Save PIL Image if it exists
+            if 'image' in result and result['image'] is not None:
+                result['image'].save(str(image_path), 'PNG')
+
             result['image_path'] = str(image_path)
             result['scene_index'] = i
             result['scene_data'] = scene
+
+            # Remove PIL Image from result to save memory
+            if 'image' in result:
+                del result['image']
 
             results.append(result)
 
             print(f"  ✓ Saved: {image_path}")
 
             # Rate limiting (respect API limits)
-            time.sleep(0.1)
+            time.sleep(0.01)  # Faster for placeholder generation
 
         print(f"\n{'='*70}")
         print(f"BATCH COMPLETE: {len(results)} images generated")
@@ -293,33 +304,111 @@ class ImageGenerator:
 
     def _simulate_generation(self, request_data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Simulate image generation (placeholder for Phase 0)
+        Generate placeholder image (Phase 0 - no API needed)
 
-        In production, replace with actual API call to Stable Diffusion service
+        Creates colored placeholder with scene information overlay
 
         Args:
             request_data: Generation parameters
 
         Returns:
-            Simulated result
+            Generation result with actual image created
         """
         # Simulate processing time
-        time.sleep(0.5)
+        time.sleep(0.1)
+
+        width = request_data['width']
+        height = request_data['height']
+        seed = request_data['seed']
+        prompt = request_data['prompt']
+
+        # Create placeholder image
+        # Use seed for consistent color selection
+        random.seed(seed)
+
+        # Choose color from palette or random
+        if self.color_palette:
+            # Use palette colors
+            color_hex = random.choice(self.color_palette)
+            # Convert hex to RGB
+            color_hex = color_hex.lstrip('#')
+            color = tuple(int(color_hex[i:i+2], 16) for i in (0, 2, 4))
+        else:
+            # Random pastel color
+            color = (
+                random.randint(100, 255),
+                random.randint(100, 255),
+                random.randint(100, 255)
+            )
+
+        # Create gradient background for visual interest
+        image = Image.new('RGB', (width, height), color)
+        draw = ImageDraw.Draw(image)
+
+        # Add subtle gradient effect
+        for y in range(height):
+            shade = int(255 * (y / height) * 0.2)  # 20% gradient
+            gradient_color = tuple(max(0, min(255, c - shade)) for c in color)
+            draw.line([(0, y), (width, y)], fill=gradient_color)
+
+        # Add text overlay
+        try:
+            # Try to use a default font
+            font_size = min(width, height) // 20
+            try:
+                font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", font_size)
+            except:
+                font = ImageFont.load_default()
+        except:
+            font = ImageFont.load_default()
+
+        # Text content
+        prompt_short = prompt[:60] + "..." if len(prompt) > 60 else prompt
+        text_lines = [
+            f"Scene {seed % 100}",
+            "",
+            prompt_short,
+            "",
+            f"Seed: {seed}",
+            f"{width}x{height}"
+        ]
+
+        # Calculate text position (centered)
+        y_offset = height // 3
+        line_height = font_size + 10
+
+        for line in text_lines:
+            # Get text bounding box
+            bbox = draw.textbbox((0, 0), line, font=font)
+            text_width = bbox[2] - bbox[0]
+            text_x = (width - text_width) // 2
+
+            # Draw text with shadow for readability
+            shadow_color = (0, 0, 0) if sum(color) > 384 else (255, 255, 255)
+            text_color = (255, 255, 255) if sum(color) > 384 else (0, 0, 0)
+
+            # Shadow
+            draw.text((text_x + 2, y_offset + 2), line, font=font, fill=shadow_color)
+            # Main text
+            draw.text((text_x, y_offset), line, font=font, fill=text_color)
+
+            y_offset += line_height
 
         result = {
             'success': True,
-            'seed': request_data['seed'],
-            'prompt': request_data['prompt'],
+            'seed': seed,
+            'prompt': prompt,
             'params': {
-                'width': request_data['width'],
-                'height': request_data['height'],
+                'width': width,
+                'height': height,
                 'steps': request_data['steps']
             },
+            'image': image,  # PIL Image object
             'image_path': None,  # To be filled by caller
-            'cost': 0.0006  # $0.0006 per image (Runware pricing)
+            'cost': 0.0  # Free - placeholder generation
         }
 
-        print(f"  ✓ Generation complete (simulated)")
+        print(f"  ✓ Placeholder generated")
 
         return result
 

@@ -280,8 +280,8 @@ class MVOrchestrator:
         """
         Phase 3: Generate visual assets
 
-        Cost: $0.0006 × num_scenes (Runware pricing)
-        Time: ~30s × num_scenes
+        Phase 0: Placeholder images (FREE, ~0.1s per image)
+        Phase 1+: Stable Diffusion API ($0.0006 per image, ~30s per image)
         """
         print(f"{'='*70}")
         print("PHASE 3: ASSET GENERATION")
@@ -305,16 +305,15 @@ class MVOrchestrator:
             use_controlnet=True
         )
 
-        # Track cost
-        cost_per_image = 0.0006
-        phase_cost = len(assets) * cost_per_image
+        # Track cost (placeholder generation is free)
+        phase_cost = sum(asset.get('cost', 0.0) for asset in assets)
         self.accumulated_cost += phase_cost
 
         self.state['assets'] = assets
 
         print(f"\n✓ Phase 3 complete")
         print(f"  Images generated: {len(assets)}")
-        print(f"  Cost: ${phase_cost:.4f}\n")
+        print(f"  Cost: ${phase_cost:.4f} (Placeholder mode: FREE)\n")
 
         return assets
 

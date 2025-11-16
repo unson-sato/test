@@ -6,19 +6,21 @@ Transform MP3 files into professional music videos using AI-driven visual genera
 
 ---
 
-## Status: Phase 0 - Minimal Prototype
+## Status: Phase 0 - Minimal Prototype (API-Free Mode)
 
 **Current Capabilities:**
 - ✅ Audio analysis (librosa) - beat detection, tempo, mood
-- ✅ Image generation (Stable Diffusion) - style consistency via LoRA
+- ✅ **Placeholder image generation (Pillow)** - **NO API REQUIRED**
 - ✅ Video composition (FFmpeg) - frame-accurate sync (±1-2 frames)
 - ⚠️  Simplified concept generation (Phase 1 will add Claude integration)
 
 **Phase 0 Goals:**
 - 10-second audio → MP4
-- Cost < $0.10
+- **Cost: $0.00 (Placeholder mode - FREE)**
 - Time < 10 minutes
 - Verify all components work
+
+**Note:** Phase 0 uses **placeholder images** (colored backgrounds with text) instead of AI-generated images. This allows testing without API keys or costs. Phase 1 will add Stable Diffusion API integration.
 
 ---
 
@@ -47,17 +49,38 @@ Transform MP3 files into professional music videos using AI-driven visual genera
 # Clone repository
 cd mv_orchestra
 
-# Install Python dependencies
-pip install -r requirements.txt
+# Install minimal dependencies (for placeholder mode)
+pip install pillow
+
+# Optional: For full testing with audio
+# pip install librosa soundfile numpy
 
 # Verify installation
-python tools/audio_analyzer.py --help
+python test_placeholder.py
 ```
 
-### Basic Usage
+### Quick Test (No Audio Required)
 
 ```bash
-# Generate MV from 10-second audio clip (Phase 0 test)
+# Test placeholder image generation (takes ~1 second)
+python test_placeholder.py
+
+# Check output images
+ls test_output/scenes/
+# → scene_0000.png, scene_0001.png, etc.
+```
+
+### Full Test (Requires MP3)
+
+```bash
+# Install audio dependencies
+pip install librosa soundfile numpy
+
+# Install FFmpeg
+sudo apt install ffmpeg  # Linux
+brew install ffmpeg      # macOS
+
+# Run with 10-second MP3 file
 python core/orchestrator.py test_audio_10sec.mp3 10
 
 # Output will be in: ./mv_workspace/output/
@@ -149,18 +172,31 @@ mv_orchestra/
 
 ## Examples
 
-### Phase 0 Test
+### Quick Test (No API, No Audio)
 
 ```bash
-# Create 10-second test audio
-# (You can use any MP3, or create one with a tool like Audacity)
+# Test placeholder image generation
+python test_placeholder.py
 
-# Run orchestrator
+# Expected output:
+# ✓ Generated: 5 images
+# ✓ Output directory: ./test_output/scenes/
+# ✓ Total cost: $0.00 (Placeholder mode)
+# ✅ All files verified successfully!
+```
+
+### Phase 0 Full Test (Requires MP3)
+
+```bash
+# Install dependencies
+pip install librosa soundfile numpy
+
+# Run with 10-second MP3
 python core/orchestrator.py test_10sec.mp3 10
 
 # Expected output:
 # ✓ Output: ./mv_workspace/output/mv_output_20251116_120000.mp4
-# ✓ Cost: $0.0060
+# ✓ Cost: $0.00 (Placeholder mode)
 # ✓ Time: 120.5s (2.0 minutes)
 # ✓ Scenes: 10
 #
@@ -170,14 +206,11 @@ python core/orchestrator.py test_10sec.mp3 10
 ### Component Testing
 
 ```bash
-# Test audio analyzer
+# Test audio analyzer (requires librosa)
 python tools/audio_analyzer.py test.mp3 analysis.json
 
-# Test image generator (standalone)
-python tools/image_generator.py
-
-# Test video composer (standalone)
-python tools/video_composer.py
+# Test placeholder generation
+python test_placeholder.py
 ```
 
 ---
@@ -257,18 +290,18 @@ VideoComposer(
 
 ## Cost Breakdown
 
-**10-second clip (Phase 0):**
-- Audio analysis: $0.00 (local)
-- Images (10): $0.006
-- Video composition: $0.00 (local)
-- **Total: ~$0.006**
+**Phase 0 (Placeholder mode - API-FREE):**
+- Audio analysis: $0.00 (local librosa)
+- Images (10): **$0.00 (Pillow placeholders)**
+- Video composition: $0.00 (local FFmpeg)
+- **Total: $0.00** ✅
 
-**3-minute song (Phase 1 target):**
-- Audio analysis: $0.00
+**Phase 1+ (With APIs):**
+- Audio analysis: $0.00 (local)
 - Claude (with caching): $0.90
-- Images (50): $0.03
-- Video composition: $0.00
-- **Total: $0.93**
+- Images (50 via SD API): $0.03
+- Video composition: $0.00 (local)
+- **Total: $0.93** (3-minute song)
 
 ---
 
