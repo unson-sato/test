@@ -27,18 +27,27 @@ MV Orchestra is a sophisticated AI-powered system that orchestrates multiple "AI
 
 ## Overview
 
-MV Orchestra transforms music video production planning into a competitive creative process. Five AI directors, each with unique personalities and expertise, compete across six phases:
+MV Orchestra transforms music video production into an end-to-end AI-powered pipeline. Five AI directors compete across design phases, followed by automated execution phases:
 
+**Design Phases (0-5):**
 ```
 Phase 0: Overall Design      → Conceptual direction and themes
 Phase 1: Character Design     → Character concepts and development
 Phase 2: Section Direction    → Per-section creative direction
-Phase 3: Clip Division        → Shot-by-shot breakdown
+Phase 3: Clip Division        → Shot-by-shot breakdown (shot-grammar)
 Phase 4: Generation Strategy  → Technical generation parameters
 Phase 5: Claude Review        → Final quality control (optional)
 ```
 
-Each phase builds upon the previous winners' concepts, creating a refined, cohesive music video design.
+**Execution Phases (6-9):**
+```
+Phase 6: Video Generation     → Execute AI video generation
+Phase 7: Editing & Timeline   → Assemble with transitions (shot-grammar)
+Phase 8: Effects & Lyric      → Apply effects and lyric motion
+Phase 9: Final Rendering      → Export complete music video
+```
+
+The system combines competitive AI creativity with systematic cinematography grammar to produce complete, professional music videos.
 
 ---
 

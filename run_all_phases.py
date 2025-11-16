@@ -48,6 +48,10 @@ from phase0 import run_phase0
 from phase1 import run_phase1
 from phase2 import run_phase2
 from phase3 import run_phase3
+from phase6 import run_phase6
+from phase7 import run_phase7
+from phase8 import run_phase8
+from phase9 import run_phase9
 from phase4 import run_phase4
 from phase5 import run_phase5
 
@@ -651,6 +655,47 @@ def run_pipeline(
             logger.warning(f"⚠ Phase 5 skipped or failed: {e}")
     else:
         logger.info("\n→ Skipping Phase 5 (Claude Review)")
+
+    # Phase 6: Video Generation Execution
+    logger.info("\n" + "=" * 70)
+    logger.info("Phase 6: Video Generation Execution")
+    logger.info("=" * 70)
+    try:
+        phase6_results = run_phase6(session_id=session_id, mock_mode=args.mock_mode)
+        logger.info(f"✓ Phase 6 completed: {phase6_results['execution_summary']['completed']}/{phase6_results['execution_summary']['total_clips']} clips generated")
+    except Exception as e:
+        logger.warning(f"⚠ Phase 6 failed: {e}")
+
+    # Phase 7: Editing & Timeline Assembly
+    logger.info("\n" + "=" * 70)
+    logger.info("Phase 7: Editing & Timeline Assembly")
+    logger.info("=" * 70)
+    try:
+        phase7_results = run_phase7(session_id=session_id, mock_mode=args.mock_mode)
+        logger.info(f"✓ Phase 7 completed: Timeline with {phase7_results['statistics']['total_clips']} clips assembled")
+    except Exception as e:
+        logger.warning(f"⚠ Phase 7 failed: {e}")
+
+    # Phase 8: Effects & Lyric Motion
+    logger.info("\n" + "=" * 70)
+    logger.info("Phase 8: Effects & Lyric Motion")
+    logger.info("=" * 70)
+    try:
+        phase8_results = run_phase8(session_id=session_id, mock_mode=args.mock_mode)
+        logger.info(f"✓ Phase 8 completed: {phase8_results['effects_applied']} effects applied")
+    except Exception as e:
+        logger.warning(f"⚠ Phase 8 failed: {e}")
+
+    # Phase 9: Final Rendering & Export
+    logger.info("\n" + "=" * 70)
+    logger.info("Phase 9: Final Rendering & Export")
+    logger.info("=" * 70)
+    try:
+        phase9_results = run_phase9(session_id=session_id, mock_mode=args.mock_mode)
+        logger.info(f"✓ Phase 9 completed: Video rendered")
+        logger.info(f"  Output files: {list(phase9_results['rendered_files'].keys())}")
+    except Exception as e:
+        logger.warning(f"⚠ Phase 9 failed: {e}")
 
     # Reload session to get all updates
     session = SharedState.load_session(session_id)

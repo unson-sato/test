@@ -18,6 +18,7 @@ import logging
 
 from core import SharedState, CodexRunner, DirectorType
 from core.utils import read_json, write_json, get_iso_timestamp
+from core.shot_grammar import ShotGrammar
 from .clip_utils import (
     snap_to_beat,
     validate_clip_coverage,
@@ -60,6 +61,15 @@ class Phase3Runner:
         # Get project root for loading analysis.json
         from core.utils import get_project_root
         self.project_root = get_project_root()
+
+        # Load shot grammar system
+        try:
+            grammar_path = self.project_root / "shot-grammar.json"
+            self.shot_grammar = ShotGrammar(str(grammar_path))
+            logger.info(f"✓ Loaded shot grammar with {self.shot_grammar.get_summary_stats()['total_categories']} categories")
+        except Exception as e:
+            logger.warning(f"Could not load shot grammar: {e}. Using basic shot types.")
+            self.shot_grammar = None
 
     def load_phase_inputs(self) -> Tuple[Dict[str, Any], List[float], Dict[str, Any]]:
         """
@@ -221,16 +231,13 @@ class Phase3Runner:
                 clip_id = generate_clip_id(clip_counter)
                 duration = snapped_end - snapped_start
 
-                # Determine shot type based on clip position in section
-                progress = (current_time - section_start) / (section_end - section_start)
-                if progress < 0.2:
-                    shot_type = "establishing wide"
-                elif progress < 0.5:
-                    shot_type = "medium coverage"
-                elif progress < 0.8:
-                    shot_type = "close-up detail"
-                else:
-                    shot_type = "transition shot"
+                # Determine shot parameters using shot grammar
+                shot_params = self._select_shot_parameters(
+                    section=section,
+                    progress=(current_time - section_start) / (section_end - section_start),
+                    duration=duration,
+                    director_profile=profile
+                )
 
                 clips.append({
                     'clip_id': clip_id,
@@ -238,9 +245,13 @@ class Phase3Runner:
                     'end_time': round(snapped_end, 2),
                     'duration': round(duration, 2),
                     'section': section_name,
-                    'shot_type': shot_type,
-                    'camera_movement': profile.name_en + " style camera",
-                    'complexity': estimate_clip_complexity(shot_type, duration),
+                    'shot_type': shot_params['shot_type'],
+                    'shot_size': shot_params.get('shot_size', 'medium_shot'),
+                    'lens_type': shot_params.get('lens_type', 'standard'),
+                    'camera_movement': shot_params.get('camera_movement', 'static_locked'),
+                    'composition': shot_params.get('composition', 'rule_of_thirds'),
+                    'lighting': shot_params.get('lighting', 'natural_light'),
+                    'complexity': estimate_clip_complexity(shot_params['shot_type'], duration),
                     'beat_aligned': True,
                     'base_allocation': round(duration, 2)
                 })
@@ -261,6 +272,143 @@ class Phase3Runner:
         }
 
         return proposal
+
+    def _select_shot_parameters(
+        self,
+        section: Dict[str, Any],
+        progress: float,
+        duration: float,
+        director_profile: Any
+    ) -> Dict[str, str]:
+        """
+        Select shot parameters using shot grammar system.
+
+        Args:
+            section: Section data from Phase 2
+            progress: Progress through section (0.0-1.0)
+            duration: Clip duration in seconds
+            director_profile: Director profile for personality-based selection
+
+        Returns:
+            Dictionary with shot parameters
+        """
+        # Default shot type based on progress (fallback)
+        if progress < 0.2:
+            default_shot_type = "establishing wide"
+        elif progress < 0.5:
+            default_shot_type = "medium coverage"
+        elif progress < 0.8:
+            default_shot_type = "close-up detail"
+        else:
+            default_shot_type = "transition shot"
+
+        # If shot grammar is not available, return basic parameters
+        if not self.shot_grammar:
+            return {
+                'shot_type': default_shot_type,
+                'shot_size': 'medium_shot',
+                'lens_type': 'standard',
+                'camera_movement': 'static_locked',
+                'composition': 'rule_of_thirds',
+                'lighting': 'natural_light'
+            }
+
+        # Get section emotion/mood
+        section_emotion = section.get('emotion', 'neutral')
+        section_mood = section.get('mood', section_emotion)
+
+        # Map emotion to closest grammar emotion
+        emotion_mapping = {
+            'happy': 'joy_excitement',
+            'sad': 'sadness_melancholy',
+            'angry': 'anger_aggression',
+            'fear': 'fear_anxiety',
+            'love': 'love_romance',
+            'lonely': 'loneliness_isolation',
+            'confused': 'confusion_disorientation',
+            'powerful': 'power_confidence',
+            'vulnerable': 'vulnerability_weakness',
+            'hopeful': 'hope_aspiration'
+        }
+
+        grammar_emotion = emotion_mapping.get(section_mood.lower(), 'joy_excitement')
+
+        # Determine intensity based on BPM and duration
+        if duration < 2.0:
+            intensity = 'extreme'
+        elif duration < 3.0:
+            intensity = 'intense'
+        elif duration < 4.0:
+            intensity = 'energetic'
+        elif duration < 5.0:
+            intensity = 'moderate'
+        else:
+            intensity = 'calm'
+
+        # Get suggestions from shot grammar
+        try:
+            emotion_suggestion = self.shot_grammar.suggest_shot_by_emotion(grammar_emotion)
+            intensity_suggestion = self.shot_grammar.suggest_shot_by_intensity(intensity)
+
+            # Select based on director personality
+            if director_profile.innovation_focus > 0.7:
+                # Innovative: prefer dynamic movements
+                camera_opts = intensity_suggestion.get('camera', [])
+                camera_movement = camera_opts[0] if camera_opts else 'gimbal_flow'
+            elif director_profile.commercial_focus > 0.7:
+                # Commercial: prefer stable, proven choices
+                camera_movement = 'steadicam' if progress < 0.5 else 'dolly_push'
+            else:
+                # Balanced: mix of approaches
+                camera_opts = emotion_suggestion.get('camera', [])
+                camera_movement = camera_opts[0] if camera_opts else 'static_locked'
+
+            # Select shot size based on progress
+            shot_sizes = list(self.shot_grammar.get_shot_sizes().keys())
+            if progress < 0.2:
+                shot_size = 'wide_shot'
+            elif progress < 0.5:
+                shot_size = 'medium_shot'
+            elif progress < 0.8:
+                shot_size = 'close_up'
+            else:
+                shot_size = 'medium_wide_shot'
+
+            # Select lens type
+            lens_types = list(self.shot_grammar.get_lens_types().keys())
+            if shot_size in ['extreme_close_up', 'close_up']:
+                lens_type = 'portrait'
+            elif shot_size in ['extreme_wide_shot', 'wide_shot']:
+                lens_type = 'wide'
+            else:
+                lens_type = 'standard'
+
+            # Select composition and lighting from suggestions
+            compositions = emotion_suggestion.get('composition', ['rule_of_thirds'])
+            composition = compositions[0] if compositions else 'rule_of_thirds'
+
+            lighting_opts = emotion_suggestion.get('lighting', ['natural_light'])
+            lighting = lighting_opts[0] if lighting_opts else 'soft_box_beauty'
+
+            return {
+                'shot_type': default_shot_type,
+                'shot_size': shot_size,
+                'lens_type': lens_type,
+                'camera_movement': camera_movement,
+                'composition': composition,
+                'lighting': lighting
+            }
+
+        except Exception as e:
+            logger.warning(f"Error using shot grammar: {e}. Using defaults.")
+            return {
+                'shot_type': default_shot_type,
+                'shot_size': 'medium_shot',
+                'lens_type': 'standard',
+                'camera_movement': 'static_locked',
+                'composition': 'rule_of_thirds',
+                'lighting': 'natural_light'
+            }
 
     def _generate_real_clip_proposal(
         self,

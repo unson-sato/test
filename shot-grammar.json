@@ -1,0 +1,1274 @@
+{
+  "format_version": "1.0",
+  "description": "Music Video Shot Grammar - Complete Cinematography Framework",
+  "lens_types": {
+    "ultra_wide": {
+      "focal_length": "12-18mm",
+      "characteristics": ["distortion", "exaggerated_perspective", "immersive"],
+      "use_cases": ["environmental_reveal", "cramped_space_drama", "fisheye_creative"],
+      "emotional_tone": ["overwhelming", "expansive", "disorienting"]
+    },
+    "wide": {
+      "focal_length": "24-35mm",
+      "characteristics": ["natural_perspective", "environmental_context", "stable"],
+      "use_cases": ["establishing_shot", "choreography_full_body", "location_showcase"],
+      "emotional_tone": ["grounded", "realistic", "open"]
+    },
+    "standard": {
+      "focal_length": "40-50mm",
+      "characteristics": ["natural_human_vision", "minimal_distortion", "versatile"],
+      "use_cases": ["narrative_scenes", "walking_shots", "general_coverage"],
+      "emotional_tone": ["neutral", "observational", "documentary"]
+    },
+    "portrait": {
+      "focal_length": "85-135mm",
+      "characteristics": ["shallow_dof", "compression", "subject_isolation"],
+      "use_cases": ["close_up_emotion", "beauty_shots", "intimate_moments"],
+      "emotional_tone": ["intimate", "focused", "emotional"]
+    },
+    "telephoto": {
+      "focal_length": "200mm+",
+      "characteristics": ["extreme_compression", "voyeuristic", "background_blur"],
+      "use_cases": ["stalker_pov", "crowd_compression", "abstract_layers"],
+      "emotional_tone": ["detached", "observing", "distant"]
+    },
+    "macro": {
+      "focal_length": "varies",
+      "characteristics": ["extreme_close_up", "shallow_focus", "detail_reveal"],
+      "use_cases": ["texture_details", "object_symbolism", "abstract_transitions"],
+      "emotional_tone": ["introspective", "microscopic", "detail_obsessed"]
+    },
+    "anamorphic": {
+      "aspect_ratio": "2.39:1",
+      "characteristics": ["oval_bokeh", "horizontal_flares", "cinematic_look"],
+      "use_cases": ["premium_aesthetic", "emotional_peaks", "feature_film_feel"],
+      "emotional_tone": ["cinematic", "epic", "prestigious"]
+    }
+  },
+  "shot_sizes": {
+    "extreme_wide_shot": {
+      "abbr": "EWS",
+      "frame_content": "entire_environment_dominant",
+      "subject_size": "tiny_or_absent",
+      "purpose": ["scale_establishment", "isolation_theme", "world_building"],
+      "emotional_impact": ["loneliness", "grandeur", "insignificance"]
+    },
+    "wide_shot": {
+      "abbr": "WS",
+      "frame_content": "full_body_with_environment",
+      "subject_size": "full_figure_visible",
+      "purpose": ["action_choreography", "location_context", "group_dynamics"],
+      "emotional_impact": ["openness", "freedom", "context"]
+    },
+    "medium_wide_shot": {
+      "abbr": "MWS",
+      "frame_content": "knees_to_head",
+      "subject_size": "prominent_but_contextualized",
+      "purpose": ["performance_shots", "walking_sequences", "interaction"],
+      "emotional_impact": ["balanced", "approachable", "active"]
+    },
+    "medium_shot": {
+      "abbr": "MS",
+      "frame_content": "waist_to_head",
+      "subject_size": "upper_body_focus",
+      "purpose": ["dialogue", "singing_performance", "gesture_emphasis"],
+      "emotional_impact": ["conversational", "engaging", "personal"]
+    },
+    "medium_close_up": {
+      "abbr": "MCU",
+      "frame_content": "chest_to_head",
+      "subject_size": "face_and_shoulders",
+      "purpose": ["emotional_singing", "reaction_shots", "intimacy_building"],
+      "emotional_impact": ["intimate", "emotional", "connected"]
+    },
+    "close_up": {
+      "abbr": "CU",
+      "frame_content": "face_only",
+      "subject_size": "fills_frame",
+      "purpose": ["peak_emotion", "lyric_emphasis", "character_study"],
+      "emotional_impact": ["intense", "vulnerable", "raw"]
+    },
+    "extreme_close_up": {
+      "abbr": "ECU",
+      "frame_content": "eyes_mouth_hands_details",
+      "subject_size": "partial_feature",
+      "purpose": ["symbolic_detail", "sensory_focus", "abstract_emotion"],
+      "emotional_impact": ["claustrophobic", "hyper_focused", "abstract"]
+    },
+    "insert_shot": {
+      "abbr": "INS",
+      "frame_content": "object_or_detail",
+      "subject_size": "object_dominant",
+      "purpose": ["narrative_clue", "symbolic_object", "transition_element"],
+      "emotional_impact": ["curiosity", "symbolism", "pause"]
+    }
+  },
+  "camera_movements": {
+    "static_locked": {
+      "description": "完全静止・三脚固定",
+      "stability": "maximum",
+      "use_cases": ["contemplative_moments", "stable_performance", "architectural_shots"],
+      "emotional_tone": ["stillness", "meditation", "observation"]
+    },
+    "pan": {
+      "description": "左右への水平回転",
+      "variants": ["slow_reveal", "fast_whip", "tracking_subject"],
+      "speed_range": ["0.5deg/s", "360deg/s"],
+      "use_cases": ["environment_scan", "subject_follow", "transition_whip"],
+      "emotional_tone": ["discovery", "urgency", "connection"]
+    },
+    "tilt": {
+      "description": "上下への垂直回転",
+      "variants": ["tilt_up_reveal", "tilt_down_intimate", "tilt_back_dramatic"],
+      "use_cases": ["height_reveal", "power_dynamics", "scale_emphasis"],
+      "emotional_tone": ["aspiration", "dominance", "submission"]
+    },
+    "dolly_push": {
+      "description": "被写体に向かって直進",
+      "speed_variants": ["slow_creep", "steady_approach", "aggressive_rush"],
+      "use_cases": ["intensity_build", "confrontation", "immersion"],
+      "emotional_tone": ["tension", "intimacy", "invasion"]
+    },
+    "dolly_pull": {
+      "description": "被写体から後退",
+      "speed_variants": ["slow_reveal", "steady_retreat", "fast_escape"],
+      "use_cases": ["context_reveal", "isolation_emphasis", "emotional_distance"],
+      "emotional_tone": ["loss", "abandonment", "perspective_shift"]
+    },
+    "truck_lateral": {
+      "description": "左右への平行移動",
+      "variants": ["slow_drift", "fast_slide", "tracking_parallel"],
+      "use_cases": ["following_action", "reveal_composition", "dynamic_background"],
+      "emotional_tone": ["fluidity", "motion", "chase"]
+    },
+    "pedestal": {
+      "description": "垂直方向への上下移動",
+      "variants": ["rise_up", "descend_down"],
+      "use_cases": ["perspective_shift", "scale_change", "status_change"],
+      "emotional_tone": ["elevation", "descent", "transformation"]
+    },
+    "crane_jib": {
+      "description": "大型クレーンによる複合移動",
+      "variants": ["sweeping_rise", "dramatic_descent", "arc_movement"],
+      "use_cases": ["epic_reveals", "concert_scale", "aerial_perspective"],
+      "emotional_tone": ["grandeur", "spectacle", "freedom"]
+    },
+    "handheld": {
+      "description": "手持ち撮影の有機的揺れ",
+      "intensity": ["subtle_breath", "medium_walk", "chaotic_run"],
+      "use_cases": ["documentary_feel", "urgency", "chaos"],
+      "emotional_tone": ["realism", "instability", "energy"]
+    },
+    "steadicam": {
+      "description": "スタビライザー使用の滑らかな移動",
+      "variants": ["gliding_follow", "weaving_through", "circling_orbit"],
+      "use_cases": ["smooth_choreography", "dreamlike_motion", "floating_pov"],
+      "emotional_tone": ["elegance", "dreamlike", "supernatural"]
+    },
+    "gimbal_flow": {
+      "description": "電子スタビライザーの流動的移動",
+      "variants": ["low_mode_ground", "high_mode_overhead", "inverted_mode"],
+      "use_cases": ["dynamic_follow", "modern_aesthetic", "acrobatic_shots"],
+      "emotional_tone": ["modern", "fluid", "athletic"]
+    },
+    "drone_aerial": {
+      "description": "ドローンによる空撮",
+      "variants": ["rising_reveal", "swooping_dive", "orbital_circle", "fpv_fast"],
+      "use_cases": ["scale_establishment", "chase_sequences", "impossible_angles"],
+      "emotional_tone": ["freedom", "transcendence", "omniscience"]
+    },
+    "slider": {
+      "description": "レール上の精密移動",
+      "length": ["short_30cm", "medium_1m", "long_3m"],
+      "use_cases": ["subtle_parallax", "product_reveal", "controlled_motion"],
+      "emotional_tone": ["precision", "elegance", "control"]
+    },
+    "zoom": {
+      "description": "焦点距離の変化",
+      "variants": ["slow_creep_zoom", "crash_zoom_in", "dolly_zoom_vertigo"],
+      "use_cases": ["focus_shift", "dramatic_emphasis", "psychological_effect"],
+      "emotional_tone": ["surprise", "disorientation", "emphasis"]
+    },
+    "orbital_360": {
+      "description": "被写体を中心に360度回転",
+      "speed": ["slow_reveal", "medium_showcase", "fast_spin"],
+      "use_cases": ["character_introduction", "time_freeze_effect", "highlight_moment"],
+      "emotional_tone": ["showcase", "suspended_time", "emphasis"]
+    },
+    "whip_pan": {
+      "description": "超高速パンでブラー転換",
+      "speed": "180-360deg/s",
+      "use_cases": ["scene_transition", "beat_punctuation", "energy_burst"],
+      "emotional_tone": ["shock", "energy", "chaos"]
+    },
+    "rack_focus": {
+      "description": "フォーカス面の移動",
+      "variants": ["foreground_to_background", "background_to_foreground"],
+      "use_cases": ["attention_shift", "reveal_element", "depth_play"],
+      "emotional_tone": ["realization", "shift", "depth"]
+    }
+  },
+  "movement_intensity_grid": {
+    "calm": {
+      "camera": ["static_locked", "slow_pan", "gentle_tilt"],
+      "speed": "0-10% max_speed",
+      "typical_duration": "8-15sec per shot",
+      "emotions": ["peace", "contemplation", "sadness"]
+    },
+    "moderate": {
+      "camera": ["steadicam_glide", "medium_dolly", "slider_reveal"],
+      "speed": "10-40% max_speed",
+      "typical_duration": "4-8sec per shot",
+      "emotions": ["curiosity", "hope", "narrative"]
+    },
+    "energetic": {
+      "camera": ["gimbal_flow", "fast_truck", "quick_crane"],
+      "speed": "40-70% max_speed",
+      "typical_duration": "2-4sec per shot",
+      "emotions": ["excitement", "joy", "confidence"]
+    },
+    "intense": {
+      "camera": ["handheld_shake", "fast_whip_pan", "crash_zoom"],
+      "speed": "70-90% max_speed",
+      "typical_duration": "1-2sec per shot",
+      "emotions": ["anger", "chaos", "passion"]
+    },
+    "extreme": {
+      "camera": ["fpv_drone", "whip_pan_360", "rapid_orbital"],
+      "speed": "90-100% max_speed",
+      "typical_duration": "0.5-1sec per shot",
+      "emotions": ["euphoria", "breakdown", "climax"]
+    }
+  },
+  "composition_rules": {
+    "rule_of_thirds": {
+      "description": "画面を9分割し交点に主要素を配置",
+      "grid": "3x3",
+      "use_cases": ["balanced_composition", "natural_eye_flow", "standard_framing"],
+      "emotional_effect": "harmony"
+    },
+    "center_framing": {
+      "description": "被写体を中央に配置",
+      "variants": ["symmetrical_center", "wes_anderson_style"],
+      "use_cases": ["authority", "isolation", "direct_address"],
+      "emotional_effect": "focus, confrontation"
+    },
+    "negative_space": {
+      "description": "空白を意図的に活用",
+      "placement": ["subject_small_corner", "vast_empty_area"],
+      "use_cases": ["loneliness", "minimalism", "breathing_room"],
+      "emotional_effect": "isolation, contemplation"
+    },
+    "leading_lines": {
+      "description": "視線誘導する線要素",
+      "elements": ["roads", "railings", "architecture", "shadows"],
+      "use_cases": ["depth_creation", "focus_direction", "dynamic_composition"],
+      "emotional_effect": "guidance, journey"
+    },
+    "symmetry": {
+      "description": "左右または上下対称",
+      "variants": ["perfect_mirror", "near_symmetry"],
+      "use_cases": ["formal_beauty", "artificial_perfection", "duality"],
+      "emotional_effect": "order, artifice, balance"
+    },
+    "frame_within_frame": {
+      "description": "画面内に別の枠を作る",
+      "elements": ["doorways", "windows", "mirrors", "hands"],
+      "use_cases": ["depth_layers", "focus_isolation", "voyeurism"],
+      "emotional_effect": "observation, containment"
+    },
+    "diagonal_dynamic": {
+      "description": "対角線を活用した動的構図",
+      "angle": "30-60deg",
+      "use_cases": ["energy", "tension", "movement_implication"],
+      "emotional_effect": "dynamism, instability"
+    },
+    "low_angle_power": {
+      "description": "下から見上げる構図",
+      "camera_height": "below_eye_level",
+      "use_cases": ["empowerment", "dominance", "heroic"],
+      "emotional_effect": "strength, intimidation"
+    },
+    "high_angle_vulnerability": {
+      "description": "上から見下ろす構図",
+      "camera_height": "above_eye_level",
+      "use_cases": ["weakness", "submission", "overview"],
+      "emotional_effect": "vulnerability, god_view"
+    },
+    "dutch_angle": {
+      "description": "カメラを傾けた不安定構図",
+      "tilt_angle": "15-45deg",
+      "use_cases": ["disorientation", "psychological_unease", "chaos"],
+      "emotional_effect": "unease, madness, corruption"
+    },
+    "depth_staging": {
+      "description": "前景・中景・後景の3層構成",
+      "layers": ["foreground_frame", "subject_middle", "background_context"],
+      "use_cases": ["cinematic_depth", "visual_richness", "context_layering"],
+      "emotional_effect": "immersion, complexity"
+    },
+    "over_shoulder": {
+      "description": "肩越しの視点",
+      "variants": ["conversation_shot", "pov_implication"],
+      "use_cases": ["dialogue", "perspective_sharing", "intimacy"],
+      "emotional_effect": "empathy, conversation"
+    }
+  },
+  "lighting_archetypes": {
+    "golden_hour_soft": {
+      "time": "sunset/sunrise",
+      "quality": "soft_warm_diffused",
+      "color_temp": "2500-3500K",
+      "mood": ["nostalgia", "romance", "hope"],
+      "setup": "natural_sun_backlight"
+    },
+    "blue_hour_melancholy": {
+      "time": "twilight",
+      "quality": "cool_ambient_even",
+      "color_temp": "6000-8000K",
+      "mood": ["sadness", "introspection", "mystery"],
+      "setup": "natural_skylight"
+    },
+    "harsh_noon_raw": {
+      "time": "midday",
+      "quality": "hard_contrast_overhead",
+      "color_temp": "5500K",
+      "mood": ["realism", "harshness", "exposure"],
+      "setup": "direct_sun_top"
+    },
+    "neon_night_urban": {
+      "time": "night",
+      "quality": "colored_point_sources",
+      "color_temp": "mixed",
+      "mood": ["loneliness", "modernity", "urban_isolation"],
+      "setup": "practical_neon_signs"
+    },
+    "single_source_dramatic": {
+      "time": "any",
+      "quality": "hard_directional_shadow",
+      "color_temp": "varies",
+      "mood": ["drama", "mystery", "film_noir"],
+      "setup": "one_key_light_only"
+    },
+    "soft_box_beauty": {
+      "time": "controlled",
+      "quality": "even_flattering_wrap",
+      "color_temp": "5600K",
+      "mood": ["beauty", "commercial", "polish"],
+      "setup": "large_diffusion_close"
+    },
+    "backlight_silhouette": {
+      "time": "any",
+      "quality": "rim_light_dark_foreground",
+      "color_temp": "varies",
+      "mood": ["mystery", "anonymity", "icon"],
+      "setup": "strong_back_no_fill"
+    },
+    "practical_motivated": {
+      "time": "any",
+      "quality": "diegetic_sources_visible",
+      "color_temp": "matches_practicals",
+      "mood": ["realism", "immersion", "believability"],
+      "setup": "lamps_windows_screens_in_frame"
+    },
+    "chiaroscuro_contrast": {
+      "time": "any",
+      "quality": "extreme_light_dark_ratio",
+      "color_temp": "warm_shadows_cool_highlights",
+      "mood": ["tension", "duality", "baroque"],
+      "setup": "single_hard_source_no_fill"
+    },
+    "flat_ambient": {
+      "time": "overcast/studio",
+      "quality": "shadowless_even",
+      "color_temp": "5600K",
+      "mood": ["neutral", "clinical", "modern"],
+      "setup": "large_soft_sources_all_around"
+    },
+    "colored_gel_expressive": {
+      "time": "any",
+      "quality": "saturated_color_washes",
+      "color_temp": "creative",
+      "mood": ["surreal", "emotional_coding", "pop"],
+      "setup": "gels_on_multiple_sources"
+    },
+    "strobe_flash_pulse": {
+      "time": "any",
+      "quality": "intermittent_bright_bursts",
+      "color_temp": "5600K+",
+      "mood": ["club", "chaos", "disorientation"],
+      "setup": "strobe_lights_synced"
+    }
+  },
+  "editing_transitions": {
+    "hard_cut": {
+      "duration": "0 frames",
+      "use_cases": ["rhythm_punctuation", "energy_maintenance", "standard_editing"],
+      "emotional_effect": "direct, immediate"
+    },
+    "fade_to_black": {
+      "duration": "12-48 frames",
+      "use_cases": ["chapter_end", "time_passage", "death_metaphor"],
+      "emotional_effect": "finality, pause"
+    },
+    "fade_to_white": {
+      "duration": "12-48 frames",
+      "use_cases": ["rebirth", "heaven_metaphor", "overexposure_transition"],
+      "emotional_effect": "transcendence, purity"
+    },
+    "crossfade_dissolve": {
+      "duration": "12-36 frames",
+      "use_cases": ["time_passage", "memory_blend", "gentle_transition"],
+      "emotional_effect": "softness, dreamlike"
+    },
+    "match_cut": {
+      "types": ["graphic_match", "action_match", "conceptual_match"],
+      "use_cases": ["visual_poetry", "smooth_transition", "thematic_link"],
+      "emotional_effect": "cleverness, flow"
+    },
+    "jump_cut": {
+      "description": "時間省略の不連続カット",
+      "use_cases": ["time_compression", "jarring_effect", "montage"],
+      "emotional_effect": "urgency, fragmentation"
+    },
+    "smash_cut": {
+      "description": "静から動への急激転換",
+      "use_cases": ["shock", "contrast_emphasis", "wake_up_effect"],
+      "emotional_effect": "surprise, disruption"
+    },
+    "whip_pan_transition": {
+      "description": "高速パンでブラー切替",
+      "use_cases": ["energy_transfer", "location_change", "beat_sync"],
+      "emotional_effect": "dynamism, seamlessness"
+    },
+    "iris_transition": {
+      "description": "円形の開閉",
+      "use_cases": ["vintage_feel", "focus_emphasis", "playful"],
+      "emotional_effect": "nostalgia, attention"
+    },
+    "wipe": {
+      "variants": ["horizontal", "vertical", "diagonal", "clock"],
+      "use_cases": ["retro_style", "clear_separation", "star_wars_homage"],
+      "emotional_effect": "clarity, nostalgia"
+    },
+    "morph_blend": {
+      "description": "形状が変化しながら転換",
+      "use_cases": ["face_to_face", "object_transformation", "surreal"],
+      "emotional_effect": "magic, transformation"
+    },
+    "light_leak_transition": {
+      "description": "光漏れエフェクトで切替",
+      "use_cases": ["organic_feel", "film_aesthetic", "warm_transition"],
+      "emotional_effect": "analog, warmth"
+    },
+    "glitch_cut": {
+      "description": "デジタルグリッチで転換",
+      "use_cases": ["modern_aesthetic", "error_theme", "tech"],
+      "emotional_effect": "digital, broken"
+    },
+    "speed_ramp_transition": {
+      "description": "スローからファストへの加速転換",
+      "use_cases": ["action_to_action", "energy_shift", "modern_mtv"],
+      "emotional_effect": "momentum, excitement"
+    },
+    "freeze_frame": {
+      "duration": "12-120 frames",
+      "use_cases": ["moment_emphasis", "character_intro", "punctuation"],
+      "emotional_effect": "pause, reflection"
+    }
+  },
+  "environment_modifiers": {
+    "weather_rain": {
+      "visual_impact": ["streaks", "wet_surfaces", "reflection_enhancement"],
+      "mood": ["melancholy", "romance", "cleansing"],
+      "camera_considerations": ["rain_protection", "water_drops_on_lens", "backlight_highlights"]
+    },
+    "weather_fog": {
+      "visual_impact": ["depth_obscured", "mystery_layers", "light_shafts"],
+      "mood": ["mystery", "dreamlike", "isolation"],
+      "camera_considerations": ["contrast_reduction", "depth_flattening"]
+    },
+    "weather_snow": {
+      "visual_impact": ["particles", "white_coverage", "softness"],
+      "mood": ["purity", "cold", "serenity"],
+      "camera_considerations": ["shutter_speed_for_flakes", "white_balance_cool"]
+    },
+    "weather_wind": {
+      "visual_impact": ["movement_everything", "hair_clothes_dynamic", "dust_debris"],
+      "mood": ["chaos", "freedom", "struggle"],
+      "camera_considerations": ["stabilization_challenge", "audio_issues"]
+    },
+    "time_golden_hour": {
+      "visual_impact": ["warm_glow", "long_shadows", "soft_contrast"],
+      "mood": ["nostalgia", "beauty", "hope"],
+      "duration": "20-40min window"
+    },
+    "time_blue_hour": {
+      "visual_impact": ["cool_ambient", "even_light", "city_lights_visible"],
+      "mood": ["melancholy", "transition", "mystery"],
+      "duration": "20-30min window"
+    },
+    "time_night": {
+      "visual_impact": ["artificial_lights", "high_contrast", "color_sources"],
+      "mood": ["isolation", "intimacy", "urban"],
+      "camera_considerations": ["low_light_capability", "noise_management"]
+    },
+    "urban_downtown": {
+      "elements": ["buildings", "neon", "crowds", "traffic"],
+      "mood": ["energy", "loneliness", "modern"],
+      "opportunities": ["reflections", "leading_lines", "layers"]
+    },
+    "urban_alley": {
+      "elements": ["narrow_walls", "overhead_elements", "graffiti", "trash"],
+      "mood": ["gritty", "underground", "intimate"],
+      "opportunities": ["tight_framing", "top_light", "texture"]
+    },
+    "nature_forest": {
+      "elements": ["trees", "dappled_light", "organic_textures"],
+      "mood": ["escape", "natural", "spiritual"],
+      "opportunities": ["shafts_of_light", "depth", "green_palette"]
+    },
+    "nature_desert": {
+      "elements": ["vastness", "harsh_sun", "minimal_features"],
+      "mood": ["isolation", "endurance", "starkness"],
+      "opportunities": ["scale", "heat_shimmer", "golden_tones"]
+    },
+    "nature_beach": {
+      "elements": ["water", "sand", "horizon", "sky"],
+      "mood": ["freedom", "romance", "contemplation"],
+      "opportunities": ["reflections", "silhouettes", "golden_hour"]
+    },
+    "interior_warehouse": {
+      "elements": ["industrial", "large_space", "hard_surfaces"],
+      "mood": ["raw", "edgy", "dance"],
+      "opportunities": ["echo_lighting", "smoke_atmosphere", "geometry"]
+    },
+    "interior_bedroom": {
+      "elements": ["intimate_space", "personal_objects", "soft_textiles"],
+      "mood": ["vulnerability", "privacy", "confession"],
+      "opportunities": ["practical_lights", "close_quarters", "windows"]
+    },
+    "abstract_void": {
+      "elements": ["solid_color_backdrop", "no_environmental_context"],
+      "mood": ["focus", "timeless", "commercial"],
+      "opportunities": ["pure_performance", "lighting_control", "symbolic"]
+    },
+    "moving_vehicle": {
+      "elements": ["car_train_plane_interior", "passing_scenery"],
+      "mood": ["journey", "transition", "escape"],
+      "opportunities": ["window_framing", "motion_blur_outside", "confined_space"]
+    }
+  },
+  "shot_function_roles": {
+    "establishing": {
+      "purpose": "場所・時間・スケールの提示",
+      "typical_shots": ["extreme_wide_shot", "drone_aerial", "wide_shot"],
+      "duration": "3-8sec",
+      "placement": "scene_opening"
+    },
+    "performance_master": {
+      "purpose": "パフォーマンス全体像の継続",
+      "typical_shots": ["wide_shot", "medium_wide_shot"],
+      "duration": "varies_long",
+      "placement": "throughout_as_base"
+    },
+    "emotional_peak": {
+      "purpose": "感情クライマックスの強調",
+      "typical_shots": ["close_up", "extreme_close_up", "dolly_push"],
+      "duration": "2-6sec",
+      "placement": "chorus_bridge_climax"
+    },
+    "transition_bridge": {
+      "purpose": "シーン間の橋渡し",
+      "typical_shots": ["whip_pan", "insert_shot", "abstract_movement"],
+      "duration": "0.5-2sec",
+      "placement": "between_sections"
+    },
+    "narrative_insert": {
+      "purpose": "物語要素の挿入",
+      "typical_shots": ["insert_shot", "medium_shot", "specific_action"],
+      "duration": "1-3sec",
+      "placement": "story_moments"
+    },
+    "rhythm_punctuation": {
+      "purpose": "ビートの視覚的強調",
+      "typical_shots": ["any_on_beat", "crash_zoom", "freeze_frame"],
+      "duration": "on_beat_exact",
+      "placement": "musical_accents"
+    },
+    "beauty_showcase": {
+      "purpose": "被写体の美的強調",
+      "typical_shots": ["portrait_85mm", "slow_orbital", "soft_light"],
+      "duration": "3-6sec",
+      "placement": "showcase_moments"
+    },
+    "energy_burst": {
+      "purpose": "エネルギー解放の瞬間",
+      "typical_shots": ["fast_movement", "handheld_chaos", "strobe_flash"],
+      "duration": "0.5-2sec",
+      "placement": "drop_explosion"
+    },
+    "contemplative_pause": {
+      "purpose": "静かな内省の間",
+      "typical_shots": ["static_locked", "slow_push", "negative_space"],
+      "duration": "4-10sec",
+      "placement": "quiet_breakdown"
+    },
+    "call_response": {
+      "purpose": "視覚的対話構造",
+      "typical_shots": ["alternating_angles", "over_shoulder", "match_cut"],
+      "duration": "rapid_alternation",
+      "placement": "dialogue_or_duality"
+    }
+  },
+  "scene_templates": {
+    "solo_performance_spotlight": {
+      "description": "一人の歌手がスポットライトで歌う古典構成",
+      "shot_sequence": [
+        "wide_shot_establishing",
+        "medium_shot_singing",
+        "close_up_emotion",
+        "extreme_close_up_eyes",
+        "pull_back_wide_isolation"
+      ],
+      "lighting": "single_source_dramatic",
+      "movement": "slow_dolly_push_and_pull",
+      "mood": "intimate_vulnerable"
+    },
+    "dance_ensemble_energy": {
+      "description": "グループダンスの高エネルギー構成",
+      "shot_sequence": [
+        "wide_shot_full_choreo",
+        "medium_wide_dynamic",
+        "insert_feet_hands",
+        "whip_pan_transition",
+        "orbital_360_hero"
+      ],
+      "lighting": "colored_gel_expressive",
+      "movement": "gimbal_flow_fast",
+      "mood": "energetic_powerful"
+    },
+    "narrative_story_arc": {
+      "description": "物語性のあるストーリーMV",
+      "shot_sequence": [
+        "establishing_location",
+        "character_introduction",
+        "conflict_scene",
+        "emotional_breakdown",
+        "resolution_wide"
+      ],
+      "lighting": "practical_motivated",
+      "movement": "steadicam_following",
+      "mood": "cinematic_narrative"
+    },
+    "abstract_visual_poem": {
+      "description": "抽象的ビジュアルの詩的構成",
+      "shot_sequence": [
+        "macro_details",
+        "slow_motion_textures",
+        "light_refraction",
+        "bokeh_abstract",
+        "morph_transitions"
+      ],
+      "lighting": "backlight_silhouette",
+      "movement": "slider_slow",
+      "mood": "dreamlike_abstract"
+    },
+    "urban_night_wanderer": {
+      "description": "夜の都市をさまよう孤独な構成",
+      "shot_sequence": [
+        "wide_cityscape_neon",
+        "medium_walking_streets",
+        "close_up_reflection_glass",
+        "insert_neon_signs",
+        "high_angle_isolation"
+      ],
+      "lighting": "neon_night_urban",
+      "movement": "handheld_soft",
+      "mood": "melancholy_urban"
+    },
+    "concert_stadium_epic": {
+      "description": "大規模コンサートの壮大な構成",
+      "shot_sequence": [
+        "drone_aerial_crowd",
+        "crane_sweeping_stage",
+        "wide_shot_performer_crowd",
+        "close_up_singing",
+        "crowd_reaction_cutaways"
+      ],
+      "lighting": "stage_lights_dynamic",
+      "movement": "crane_jib_sweeping",
+      "mood": "epic_triumphant"
+    },
+    "intimate_bedroom_confession": {
+      "description": "ベッドルームでの内密な告白",
+      "shot_sequence": [
+        "medium_shot_sitting_bed",
+        "close_up_face_window_light",
+        "insert_hands_sheets",
+        "extreme_close_up_tears",
+        "pull_back_isolation"
+      ],
+      "lighting": "soft_window_natural",
+      "movement": "static_locked_or_slow_push",
+      "mood": "vulnerable_intimate"
+    },
+    "rapid_cut_montage": {
+      "description": "高速カット編集のモンタージュ",
+      "shot_sequence": [
+        "flash_location_1",
+        "flash_location_2",
+        "flash_face",
+        "flash_object",
+        "flash_movement"
+      ],
+      "lighting": "mixed_sources",
+      "movement": "varied_chaos",
+      "mood": "frenetic_overwhelming",
+      "edit_pace": "0.5-1sec per shot"
+    },
+    "one_shot_continuous": {
+      "description": "ワンショット連続撮影（ように見える）",
+      "shot_sequence": ["single_continuous_or_hidden_cuts"],
+      "lighting": "changing_as_camera_moves",
+      "movement": "steadicam_or_gimbal_complex_path",
+      "mood": "immersive_virtuoso"
+    },
+    "split_screen_duality": {
+      "description": "スプリットスクリーンでの対比構成",
+      "shot_sequence": [
+        "left_right_same_action",
+        "past_present_split",
+        "two_locations_parallel"
+      ],
+      "lighting": "contrasting_temperatures",
+      "movement": "mirrored_or_opposing",
+      "mood": "duality_contrast"
+    }
+  },
+  "fx_and_treatments": {
+    "slow_motion": {
+      "fps_capture": "60-240fps",
+      "playback": "24fps",
+      "use_cases": ["emotion_extension", "beauty_detail", "action_clarity"],
+      "emotional_effect": "drama, beauty, emphasis"
+    },
+    "fast_motion": {
+      "fps_capture": "12fps or time_lapse",
+      "playback": "24fps",
+      "use_cases": ["time_passage", "energy_boost", "comedy"],
+      "emotional_effect": "urgency, speed, compression"
+    },
+    "reverse_playback": {
+      "description": "映像の逆再生",
+      "use_cases": ["surreal_effect", "time_reversal_theme", "magic"],
+      "emotional_effect": "disorientation, curiosity"
+    },
+    "strobe_effect": {
+      "description": "コマ落としフラッシュ効果",
+      "use_cases": ["club_scene", "chaos", "seizure_warning"],
+      "emotional_effect": "disorientation, energy"
+    },
+    "grain_texture": {
+      "description": "フィルムグレイン追加",
+      "intensity": ["subtle_16mm", "heavy_super8"],
+      "use_cases": ["vintage_feel", "organic_texture", "nostalgia"],
+      "emotional_effect": "warmth, analog"
+    },
+    "color_grade_teal_orange": {
+      "description": "ティール&オレンジカラーグレード",
+      "use_cases": ["blockbuster_look", "separation", "modern"],
+      "emotional_effect": "polished, commercial"
+    },
+    "color_grade_monochrome": {
+      "description": "白黒またはモノクロトーン",
+      "variants": ["pure_bw", "sepia", "single_color_tone"],
+      "use_cases": ["timeless", "emotion_focus", "art"],
+      "emotional_effect": "classic, emotional, stripped"
+    },
+    "color_grade_desaturated": {
+      "description": "彩度を落としたグレード",
+      "use_cases": ["bleak", "realistic", "nordic_noir"],
+      "emotional_effect": "melancholy, harsh_reality"
+    },
+    "color_grade_oversaturated": {
+      "description": "彩度を上げたビビッド処理",
+      "use_cases": ["pop", "fantasy", "artificial"],
+      "emotional_effect": "vibrant, artificial, hyper"
+    },
+    "lens_flare": {
+      "description": "レンズフレア効果",
+      "variants": ["anamorphic_horizontal", "classic_star", "digital_hex"],
+      "use_cases": ["light_source_emphasis", "beauty", "science_fiction"],
+      "emotional_effect": "ethereal, cinematic"
+    },
+    "chromatic_aberration": {
+      "description": "色収差効果",
+      "use_cases": ["vintage_lens", "glitch_aesthetic", "edge_emphasis"],
+      "emotional_effect": "analog, broken, artistic"
+    },
+    "vignette": {
+      "description": "周辺減光",
+      "intensity": ["subtle", "heavy"],
+      "use_cases": ["focus_center", "vintage", "mood"],
+      "emotional_effect": "focus, intimacy"
+    },
+    "double_exposure": {
+      "description": "二重露光合成",
+      "use_cases": ["memory_blend", "surreal", "ghostly"],
+      "emotional_effect": "dreamlike, haunted"
+    },
+    "glitch_digital": {
+      "description": "デジタルグリッチエフェクト",
+      "variants": ["datamosh", "pixel_sort", "rgb_split"],
+      "use_cases": ["modern_error", "tech_theme", "breakdown"],
+      "emotional_effect": "broken, digital, chaotic"
+    },
+    "light_leaks": {
+      "description": "光漏れエフェクト",
+      "use_cases": ["organic_analog", "warmth", "transition"],
+      "emotional_effect": "nostalgic, warm, dreamy"
+    },
+    "lens_distortion": {
+      "description": "レンズ歪み効果",
+      "variants": ["barrel", "pincushion", "fisheye"],
+      "use_cases": ["POV", "surreal", "immersive"],
+      "emotional_effect": "distorted_reality"
+    }
+  },
+  "multi_actor_patterns": {
+    "solo_focus": {
+      "description": "単独主役に完全集中",
+      "framing": "center_or_rule_of_thirds",
+      "background": "minimal_or_blurred",
+      "emotional_impact": "intimacy, star_power"
+    },
+    "duo_conversation": {
+      "description": "2人の対話・対比",
+      "framing": "over_shoulder, two_shot, shot_reverse_shot",
+      "movement": "cut_between_or_pan",
+      "emotional_impact": "relationship, tension"
+    },
+    "triangle_dynamic": {
+      "description": "3人の関係性",
+      "framing": "triangular_composition",
+      "movement": "focus_shifts_between_three",
+      "emotional_impact": "complexity, balance"
+    },
+    "small_group_4to6": {
+      "description": "小グループ（4-6人）",
+      "framing": "wide_shot_includes_all, medium_wide_subgroups",
+      "movement": "pan_across, rack_focus_individuals",
+      "emotional_impact": "ensemble, diversity"
+    },
+    "ensemble_choreography": {
+      "description": "大人数の振付集団",
+      "framing": "wide_shot_patterns, aerial_formations",
+      "movement": "sweeping_camera, formations_visible",
+      "emotional_impact": "spectacle, unity"
+    },
+    "crowd_as_background": {
+      "description": "群衆を背景に主役前景",
+      "framing": "shallow_dof_isolate_subject",
+      "movement": "push_through_crowd",
+      "emotional_impact": "isolation_in_crowd, anonymity"
+    },
+    "crowd_as_character": {
+      "description": "群衆自体が主役",
+      "framing": "wide_angle_capture_mass",
+      "movement": "drone_overhead, crane_through",
+      "emotional_impact": "collective, movement, overwhelming"
+    },
+    "foreground_background_split": {
+      "description": "前景と後景で異なるアクション",
+      "framing": "deep_focus_or_rack_focus",
+      "movement": "static_or_subtle_reveal",
+      "emotional_impact": "layered_story, complexity"
+    },
+    "mirror_doppelganger": {
+      "description": "同一人物の複数配置（合成）",
+      "framing": "symmetry_or_chorus_line",
+      "movement": "synchronized_or_offset",
+      "emotional_impact": "internal_conflict, multiplicity"
+    },
+    "isolated_then_joined": {
+      "description": "孤独から集団への展開",
+      "sequence": ["solo_shot → people_enter_frame → group_shot"],
+      "emotional_impact": "transformation, belonging"
+    }
+  },
+  "camera_motion_grammar": {
+    "approach_intimacy": {
+      "description": "被写体に近づくことで親密さを構築",
+      "movements": ["dolly_push", "zoom_in", "walk_closer"],
+      "emotional_arc": "distance → intimacy"
+    },
+    "retreat_isolation": {
+      "description": "引くことで孤立・喪失を表現",
+      "movements": ["dolly_pull", "zoom_out", "crane_up_away"],
+      "emotional_arc": "presence → absence"
+    },
+    "circle_examination": {
+      "description": "周回で対象を検分・称賛",
+      "movements": ["orbital_360", "arc_around"],
+      "emotional_arc": "observation → understanding"
+    },
+    "ascend_aspiration": {
+      "description": "上昇で希望・解放を象徴",
+      "movements": ["crane_up", "tilt_up", "drone_rise"],
+      "emotional_arc": "earthbound → elevated"
+    },
+    "descend_decline": {
+      "description": "下降で落胆・墜落を表現",
+      "movements": ["crane_down", "tilt_down", "drone_descend"],
+      "emotional_arc": "high → low"
+    },
+    "shake_chaos": {
+      "description": "揺れで混乱・緊張を創出",
+      "movements": ["handheld_shake", "intentional_unstable"],
+      "emotional_arc": "stability → chaos"
+    },
+    "smooth_control": {
+      "description": "滑らかな動きで統制・優雅さ",
+      "movements": ["steadicam", "gimbal", "dolly_on_track"],
+      "emotional_arc": "chaos → order"
+    },
+    "speed_ramp_transformation": {
+      "description": "速度変化で状態転換",
+      "movements": ["slow_to_fast", "fast_to_slow"],
+      "emotional_arc": "contemplation → action or vice versa"
+    },
+    "freeze_then_explode": {
+      "description": "静止からの爆発的始動",
+      "movements": ["static → sudden_fast_movement"],
+      "emotional_arc": "tension → release"
+    },
+    "parallax_depth": {
+      "description": "視差移動で奥行き創出",
+      "movements": ["lateral_truck_with_layers"],
+      "emotional_arc": "flat → dimensional"
+    }
+  },
+  "emotional_camera_mapping": {
+    "joy_excitement": {
+      "camera": ["fast_movement", "handheld_energy", "crane_up", "bright_exposure"],
+      "composition": ["open_space", "centered_subject", "symmetry"],
+      "lighting": ["bright", "warm", "soft_shadows"]
+    },
+    "sadness_melancholy": {
+      "camera": ["slow_pull_back", "static_locked", "tilt_down", "underexposed"],
+      "composition": ["negative_space", "off_center", "low_in_frame"],
+      "lighting": ["cool_tones", "dim", "single_source"]
+    },
+    "anger_aggression": {
+      "camera": ["aggressive_push", "handheld_shake", "low_angle", "dutch_angle"],
+      "composition": ["tight_framing", "close_ups", "diagonal"],
+      "lighting": ["harsh", "red_tones", "high_contrast"]
+    },
+    "fear_anxiety": {
+      "camera": ["unstable_handheld", "dutch_angle", "fast_whip_pan", "wide_lens_distortion"],
+      "composition": ["unbalanced", "claustrophobic", "corners"],
+      "lighting": ["shadows", "underlit", "harsh_contrast"]
+    },
+    "love_romance": {
+      "camera": ["slow_push", "soft_focus", "orbital_gentle", "golden_hour"],
+      "composition": ["close_ups", "soft_edges", "bokeh_background"],
+      "lighting": ["warm", "soft", "backlit_glow"]
+    },
+    "loneliness_isolation": {
+      "camera": ["slow_pull_away", "high_angle", "static_wide"],
+      "composition": ["negative_space", "small_in_frame", "empty_background"],
+      "lighting": ["cool", "dim", "separated_from_environment"]
+    },
+    "confusion_disorientation": {
+      "camera": ["dutch_angle", "spinning", "rack_focus_random", "unstable"],
+      "composition": ["unbalanced", "fragmented", "no_clear_center"],
+      "lighting": ["mixed_color_temps", "strobing", "unpredictable"]
+    },
+    "power_confidence": {
+      "camera": ["low_angle", "slow_push", "steadicam_smooth", "wide_lens"],
+      "composition": ["centered", "dominant_in_frame", "leading_lines_to_subject"],
+      "lighting": ["strong_key", "rim_light", "dramatic_contrast"]
+    },
+    "vulnerability_weakness": {
+      "camera": ["high_angle", "slow_pull", "soft_focus", "tight_framing"],
+      "composition": ["low_in_frame", "cornered", "enclosed"],
+      "lighting": ["soft", "even", "minimal_shadows"]
+    },
+    "hope_aspiration": {
+      "camera": ["tilt_up", "crane_rise", "slow_push", "lens_flare"],
+      "composition": ["upward_direction", "open_sky", "ascending_lines"],
+      "lighting": ["bright", "warm", "backlight_halo"]
+    }
+  },
+  "scene_archetypes": {
+    "hero_introduction": {
+      "description": "主人公の初登場シーン",
+      "shot_progression": ["silhouette_mystery", "slow_reveal_dolly", "face_close_up"],
+      "lighting": "backlight_then_reveal",
+      "music_sync": "build_to_drop",
+      "emotional_goal": "intrigue → identification"
+    },
+    "emotional_breakdown": {
+      "description": "感情的崩壊の瞬間",
+      "shot_progression": ["wide_isolation", "push_to_face", "extreme_close_up_tears"],
+      "lighting": "dim_single_source",
+      "music_sync": "quiet_or_stripped_instrumental",
+      "emotional_goal": "empathy, catharsis"
+    },
+    "triumphant_climax": {
+      "description": "勝利・達成のクライマックス",
+      "shot_progression": ["low_angle_power", "crane_up_reveal", "wide_celebration"],
+      "lighting": "bright_warm_explosive",
+      "music_sync": "final_chorus_peak",
+      "emotional_goal": "euphoria, release"
+    },
+    "dance_battle": {
+      "description": "ダンスバトル・競争シーン",
+      "shot_progression": ["alternating_cuts", "circling_both", "rapid_montage", "winner_freeze"],
+      "lighting": "colored_gels_contrasting",
+      "music_sync": "back_and_forth_rhythm",
+      "emotional_goal": "tension, competition"
+    },
+    "memory_flashback": {
+      "description": "記憶・回想シーン",
+      "shot_progression": ["present_trigger", "crossfade_past", "soft_focus_memory"],
+      "lighting": "desaturated_or_warm_nostalgic",
+      "music_sync": "tempo_slow_or_echo",
+      "emotional_goal": "nostalgia, reflection"
+    },
+    "chase_pursuit": {
+      "description": "追跡・逃走シーン",
+      "shot_progression": ["establish_distance", "fast_cutting", "pov_running", "near_miss"],
+      "lighting": "high_contrast_urgency",
+      "music_sync": "fast_beat_driving",
+      "emotional_goal": "adrenaline, suspense"
+    },
+    "romantic_encounter": {
+      "description": "ロマンチックな出会い・接触",
+      "shot_progression": ["two_shot_distance", "alternating_close_ups", "touch_insert", "embrace_wide"],
+      "lighting": "soft_warm_glowing",
+      "music_sync": "melodic_swell",
+      "emotional_goal": "connection, warmth"
+    },
+    "isolation_in_crowd": {
+      "description": "群衆の中の孤独",
+      "shot_progression": ["wide_crowd_chaos", "shallow_dof_isolate_subject", "close_up_alone"],
+      "lighting": "subject_lit_differently_than_crowd",
+      "music_sync": "contrast_internal_vs_external",
+      "emotional_goal": "alienation, disconnection"
+    },
+    "rebirth_transformation": {
+      "description": "再生・変身シーン",
+      "shot_progression": ["darkness", "light_burst", "reveal_new_form", "confident_stance"],
+      "lighting": "dark_to_bright_transition",
+      "music_sync": "build_to_explosion",
+      "emotional_goal": "empowerment, change"
+    },
+    "quiet_contemplation": {
+      "description": "静かな内省の瞬間",
+      "shot_progression": ["static_wide_empty", "slow_push_face", "hold_stillness"],
+      "lighting": "natural_soft_window",
+      "music_sync": "minimal_or_silence",
+      "emotional_goal": "introspection, peace"
+    }
+  },
+  "temporal_techniques": {
+    "real_time": {
+      "description": "実時間での連続撮影",
+      "use_cases": ["performance_authenticity", "one_take_feel", "immersion"],
+      "emotional_effect": "presence, realism"
+    },
+    "time_compression": {
+      "description": "時間圧縮（ジャンプカット・省略）",
+      "use_cases": ["montage", "day_to_night", "process_shortening"],
+      "emotional_effect": "efficiency, energy"
+    },
+    "time_expansion": {
+      "description": "時間拡張（スローモーション・反復）",
+      "use_cases": ["emotional_moment_extension", "beauty_emphasis", "suspense"],
+      "emotional_effect": "intensity, beauty, drama"
+    },
+    "freeze_frame": {
+      "description": "時間停止",
+      "use_cases": ["moment_crystallization", "character_intro", "punctuation"],
+      "emotional_effect": "pause, reflection, emphasis"
+    },
+    "reverse_time": {
+      "description": "時間逆行",
+      "use_cases": ["surreal", "regret_theme", "magic_realism"],
+      "emotional_effect": "disorientation, wonder"
+    },
+    "loop_repeat": {
+      "description": "ループ反復",
+      "use_cases": ["stuck_in_time", "obsession", "rhythmic_pattern"],
+      "emotional_effect": "hypnotic, trapped"
+    },
+    "parallel_timeline": {
+      "description": "並行時間軸（スプリットスクリーン等）",
+      "use_cases": ["multiple_perspectives", "past_present_future", "cause_effect"],
+      "emotional_effect": "complexity, connection"
+    },
+    "non_linear_fragmented": {
+      "description": "非線形断片構成",
+      "use_cases": ["memory_confusion", "artistic_collage", "puzzle_narrative"],
+      "emotional_effect": "mystery, artistry, confusion"
+    },
+    "time_lapse": {
+      "description": "タイムラプス圧縮",
+      "use_cases": ["day_cycle", "city_movement", "change_over_time"],
+      "emotional_effect": "passage, transformation"
+    },
+    "bullet_time_360": {
+      "description": "バレットタイム（時間停止中のカメラ移動）",
+      "use_cases": ["matrix_effect", "highlight_moment", "impossible_perspective"],
+      "emotional_effect": "superhuman, spectacle"
+    }
+  },
+  "symbolic_motifs": {
+    "mirror_duality": {
+      "description": "鏡面による二面性の象徴。影、過去、もう一人の自分。",
+      "visual_elements": ["mirror_shards", "reflection_glass", "symmetry_split"],
+      "camera_usage": ["rack_focus_glass", "parallax_pan"]
+    },
+    "water_memory": {
+      "description": "水面を記憶のメタファーとして扱う。",
+      "visual_elements": ["reflection_ripple", "raindrop_close", "wet_floor_glare"],
+      "color_palette": ["blue_cyan_mono"]
+    },
+    "light_burst_rebirth": {
+      "description": "強光で転換点・再生・覚醒を象徴。",
+      "visual_elements": ["light_wall_white", "over_exposure_pop"],
+      "camera_usage": ["push_then_hold", "tilt_up_reveal"]
+    },
+    "shadows_expand": {
+      "description": "影の伸び方で孤独・恐怖・内面闇を象徴。",
+      "visual_elements": ["long_shadow_sunset", "top_light_hard"],
+      "camera_usage": ["high_angle_soft"]
+    },
+    "ascending_path": {
+      "description": "階段/丘/高台など上昇を象徴する導線。",
+      "camera_usage": ["crane_up_fast", "tilt_up"],
+      "emotion": ["hope"]
+    },
+    "broken_timeline": {
+      "description": "時間が断裂したような構成（記憶の混線）。",
+      "methods": ["jump_cut", "reverse_reveal", "loop_motion"]
+    },
+    "crowd_as_emotion": {
+      "description": "群衆を主人公の感情のメタファーに置く。",
+      "camera_usage": ["fpv_drone_fast", "wide_angle_18mm"],
+      "patterns": ["chaotic_swarm", "wave_motion"]
+    },
+    "neon_inner_city": {
+      "description": "現代の孤独・喧騒・走り抜ける夜。",
+      "visual_elements": ["neon_reflection_rain", "bokeh_street"],
+      "camera_usage": ["handheld_soft", "parallax_pan"]
+    }
+  },
+  "scene_transition_logic": {
+    "energy_curve": {
+      "rule": "各ショットのエネルギーを小→中→大→最大→落ち着き のカーブに沿って配置する。",
+      "pattern": ["calm_intro", "build_up", "burst", "release", "resolution"]
+    },
+    "contrast_pairs": {
+      "rule": "激しいシーンの後に静かなシーンを挟むと緩急が生まれる。",
+      "example": [
+        {"from": "fast_dance", "to": "slow_closeup_emotion"},
+        {"from": "drone_fast", "to": "locked_down_tripod"}
+      ]
+    },
+    "motion_match_cut": {
+      "rule": "動き方向や速度を一致させて自然につなぐ。",
+      "example": [
+        "pan_left → pan_left",
+        "tilt_down → tilt_down",
+        "walk_forward → walk_forward"
+      ]
+    },
+    "shape_match_cut": {
+      "rule": "画面構造・輪郭・シルエットで一致させる編集方法。",
+      "example": ["circle_light → sun", "arms_open → doors_open"]
+    },
+    "lyric_synced_cut": {
+      "rule": "歌詞のキーワードに合わせてショットを変える。",
+      "example": ["fly → tilt_up_reveal", "break → whip_pan_cut"]
+    },
+    "tempo_shift_transition": {
+      "rule": "テンポが上がる瞬間でスピードランプ・白飛び・フリーズを組み合わせる",
+      "methods": ["speed_ramp_in", "light_burst", "hard_cut_on_beat"]
+    },
+    "emotional_drop_transition": {
+      "rule": "感情が落ちるパートで色温度・ノイズ・構図を変化。",
+      "methods": ["cold_grade_shift", "dolly_out_slow"]
+    }
+  },
+  "camera_choreo_sync": {
+    "sync_modes": {
+      "parallel_motion": {
+        "description": "被写体とカメラが同じ方向・スピードで動く",
+        "effect": "安定感・統一感"
+      },
+      "counter_motion": {
+        "description": "被写体と逆方向へ動く",
+        "effect": "緊張、引き裂かれる感覚"
+      },
+      "orbit_sync": {
+        "description": "主人公が回転 → カメラも回転",
+        "effect": "動きの統合、目眩感の演出"
+      },
+      "zigzag_interlock": {
+        "description": "ダンスの左右ステップに合わせてカメラも細かくパanning",
+        "effect": "リズムの可視化"
+      },
+      "tempo_resonance": {
+        "description": "BPMに一致する微動揺や押し引きをカメラに与える",
+        "effect": "音楽と視覚の融合"
+      }
+    },
+    "interaction_patterns": {
+      "camera_catches_actor": {
+        "description": "振付の「向き直り」に合わせてカメラが捕まえに行く"
+      },
+      "actor_invades_frame": {
+        "description": "フレーム外から役者が動き込みフレームを支配"
+      },
+      "push_to_expression": {
+        "description": "表情で感情ピーク → カメラ寄りが同期"
+      },
+      "pivot_spin_pair": {
+        "description": "役者がスピン → カメラも逆スピン"
+      }
+    }
+  },
+  "root_structure": {
+    "format_version": "1.0",
+    "sections": [
+      "lens_types",
+      "shot_sizes",
+      "camera_movements",
+      "movement_intensity_grid",
+      "composition_rules",
+      "lighting_archetypes",
+      "editing_transitions",
+      "environment_modifiers",
+      "shot_function_roles",
+      "scene_templates",
+      "fx_and_treatments",
+      "multi_actor_patterns",
+      "camera_motion_grammar",
+      "emotional_camera_mapping",
+      "scene_archetypes",
+      "temporal_techniques",
+      "symbolic_motifs",
+      "scene_transition_logic",
+      "camera_choreo_sync"
+    ],
+    "export_ready": true,
+    "notes": [
+      "全カテゴリは組み合わせ可能",
+      "ショット記述子は階層的なタグ構造を利用",
+      "CLIエージェントによる自動MV生成を想定したフィールド命名"
+    ]
+  }
+}
