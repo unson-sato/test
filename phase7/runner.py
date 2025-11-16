@@ -418,13 +418,12 @@ class Phase7Runner:
         """Save Phase 7 results to SharedState"""
         phase_data = {
             'phase': 7,
-            'status': 'completed',
             'timestamp': get_iso_timestamp(),
             'results': results
         }
 
-        self.session.set_phase_data(7, phase_data)
-        self.session.save()
+        self.session.set_phase_data(7, phase_data, auto_save=False)
+        self.session.complete_phase(7)
 
         logger.info("Phase 7 results saved to SharedState")
 

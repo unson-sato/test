@@ -109,12 +109,11 @@ class Phase8Runner:
         """Save results"""
         phase_data = {
             'phase': 8,
-            'status': 'completed',
             'timestamp': get_iso_timestamp(),
             'results': results
         }
-        self.session.set_phase_data(8, phase_data)
-        self.session.save()
+        self.session.set_phase_data(8, phase_data, auto_save=False)
+        self.session.complete_phase(8)
 
 
 def run_phase8(session_id: str, mock_mode: bool = True) -> Dict[str, Any]:

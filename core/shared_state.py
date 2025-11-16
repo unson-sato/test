@@ -32,7 +32,7 @@ class PhaseData:
     Data for a single phase of the orchestration process.
 
     Attributes:
-        phase_number: The phase number (0-5)
+        phase_number: The phase number (0-9)
         phase_name: Human-readable phase name
         status: Current status (pending, in_progress, completed, failed)
         started_at: Timestamp when phase started
@@ -110,14 +110,18 @@ class SharedState:
             updated_at=get_iso_timestamp()
         )
 
-        # Initialize phase data for all phases (0-5)
+        # Initialize phase data for all phases (0-9)
         self.phases: Dict[int, PhaseData] = {
             0: PhaseData(0, "Overall Design"),
             1: PhaseData(1, "Character Design"),
             2: PhaseData(2, "Section Direction"),
             3: PhaseData(3, "Clip Division"),
             4: PhaseData(4, "Generation Strategy"),
-            5: PhaseData(5, "Real Claude Review (Optional)")
+            5: PhaseData(5, "Real Claude Review (Optional)"),
+            6: PhaseData(6, "Video Generation Execution"),
+            7: PhaseData(7, "Editing & Timeline Assembly"),
+            8: PhaseData(8, "Effects & Lyric Motion"),
+            9: PhaseData(9, "Final Rendering & Export")
         }
 
         # Global session data (shared across phases)
@@ -215,7 +219,7 @@ class SharedState:
         Get data for a specific phase.
 
         Args:
-            phase_number: The phase number (0-5)
+            phase_number: The phase number (0-9)
 
         Returns:
             PhaseData object for the requested phase
@@ -235,7 +239,7 @@ class SharedState:
         Set data for a specific phase.
 
         Args:
-            phase_number: The phase number (0-5)
+            phase_number: The phase number (0-9)
             data: Data to store for the phase
             metadata: Optional metadata to merge with existing metadata
             auto_save: Whether to automatically save session (default: True)
@@ -260,7 +264,7 @@ class SharedState:
         Mark a phase as started.
 
         Args:
-            phase_number: The phase number (0-5)
+            phase_number: The phase number (0-9)
             auto_save: Whether to automatically save session (default: True)
 
         Raises:
@@ -283,7 +287,7 @@ class SharedState:
         Mark a phase as completed.
 
         Args:
-            phase_number: The phase number (0-5)
+            phase_number: The phase number (0-9)
             auto_save: Whether to automatically save session (default: True)
 
         Raises:
@@ -305,7 +309,7 @@ class SharedState:
         Mark a phase as failed.
 
         Args:
-            phase_number: The phase number (0-5)
+            phase_number: The phase number (0-9)
             error_info: Optional error information to store
             auto_save: Whether to automatically save session (default: True)
 

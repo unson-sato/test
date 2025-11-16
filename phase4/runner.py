@@ -154,19 +154,9 @@ class Phase4Runner:
         if 'winner' in self.phase3_data and 'proposal' in self.phase3_data['winner']:
             winner_proposal = self.phase3_data['winner']['proposal']
 
-            # Extract clips from sections
-            clips = []
-            if 'sections' in winner_proposal:
-                for section in winner_proposal['sections']:
-                    if 'clips' in section:
-                        for clip in section['clips']:
-                            # Enhance clip with section context
-                            enhanced_clip = clip.copy()
-                            enhanced_clip['section_name'] = section.get('section_name', '')
-                            enhanced_clip['section_mood'] = section.get('mood', '')
-                            clips.append(enhanced_clip)
-
-            return clips
+            # Phase 3 stores clips directly in proposal
+            if 'clips' in winner_proposal:
+                return winner_proposal['clips']
 
         # Fallback: create sample clips if Phase 3 data unavailable
         return self._create_sample_clips()

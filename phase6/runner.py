@@ -94,7 +94,11 @@ class Phase6Runner:
         if phase4_data.status != "completed":
             raise RuntimeError("Phase 4 must be completed before running Phase 6")
 
-        strategies = phase4_data.data.get('winner', {}).get('generation_strategies', [])
+        # Phase 4 winner contains proposal with generation_strategies
+        winner = phase4_data.data.get('winner', {})
+        proposal = winner.get('proposal', {})
+        strategies = proposal.get('generation_strategies', [])
+
         if not strategies:
             raise RuntimeError("No generation strategies found in Phase 4")
 
@@ -254,13 +258,12 @@ class Phase6Runner:
         """Save Phase 6 results to SharedState"""
         phase_data = {
             'phase': 6,
-            'status': 'completed',
             'timestamp': get_iso_timestamp(),
             'results': results
         }
 
-        self.session.set_phase_data(6, phase_data)
-        self.session.save()
+        self.session.set_phase_data(6, phase_data, auto_save=False)
+        self.session.complete_phase(6)
 
         logger.info(f"Phase 6 results saved to SharedState")
 
