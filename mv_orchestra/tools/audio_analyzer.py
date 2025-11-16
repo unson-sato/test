@@ -87,8 +87,11 @@ class AudioAnalyzer:
 
             print(f"  Tempo: {self._tempo:.2f} BPM")
             print(f"  Beats detected: {len(self._beat_times)}")
-            print(f"  First beat: {self._beat_times[0]:.3f}s")
-            print(f"  Last beat: {self._beat_times[-1]:.3f}s")
+            if len(self._beat_times) > 0:
+                print(f"  First beat: {self._beat_times[0]:.3f}s")
+                print(f"  Last beat: {self._beat_times[-1]:.3f}s")
+            else:
+                print(f"  Warning: No beats detected (using uniform grid)")
 
         return self._tempo, self._beat_times
 
@@ -221,6 +224,15 @@ class AudioAnalyzer:
 
         # Run all analyses
         tempo, beat_times = self.analyze_beats()
+
+        # Fallback: If no beats detected, create uniform grid
+        if len(beat_times) == 0:
+            print("  Creating uniform beat grid (0.5s intervals)...")
+            beat_times = np.arange(0, self.duration, 0.5)
+            tempo = 120.0  # 120 BPM = 0.5s intervals
+            self._beat_times = beat_times
+            self._tempo = tempo
+
         key, mode = self.analyze_key_mode()
         mood = self.analyze_mood()
         energy_curve = self.analyze_energy()
