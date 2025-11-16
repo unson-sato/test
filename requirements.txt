@@ -10,6 +10,9 @@ soundfile==0.12.1  # Audio file I/O
 numpy==1.26.4  # Numerical operations (required by librosa)
 scipy==1.13.1  # Scientific computing (required by librosa)
 
+# Phase 5: MCP Clip Generation
+aiohttp==3.9.5  # HTTP client for MCP video download
+
 # Phase 6: CLIP Quality Evaluation
 transformers==4.46.3  # CLIP model (using stable version for compatibility)
 torch==2.5.1  # PyTorch backend

@@ -96,6 +96,7 @@ def run_phase5(
         output_dir=output_dir,
         max_parallel=max_parallel,
         max_retries=max_retries,
+        mock_mode=mock_mode,
     )
 
     # Generate clips

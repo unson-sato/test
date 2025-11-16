@@ -29,8 +29,14 @@ from .feedback_loop_manager import FeedbackLoopManager, IterationResult, Feedbac
 from .pipeline_state import PipelineState
 
 # Phase 5-9 components
+from .mcp_client import MCPClient
 from .mcp_selector import MCPSelector
-from .mcp_clip_generator import MCPClipGenerator, VideoClip, GenerationResult
+from .mcp_clip_generator import (
+    MCPClipGenerator,
+    VideoClip,
+    GenerationResult,
+    MCPGenerationError,
+)
 from .clip_evaluator import CLIPEvaluator, EvaluationResult, TechnicalQuality
 from .video_editor import VideoEditor, TrimSpec, MergeSpec, EditResult
 from .effects_generator import EffectsGenerator, EffectsCode, EffectsEvaluation
@@ -62,10 +68,12 @@ __all__ = [
     "FeedbackLoopResult",
     "PipelineState",
     # Phase 5 - MCP Clip Generation
+    "MCPClient",
     "MCPSelector",
     "MCPClipGenerator",
     "VideoClip",
     "GenerationResult",
+    "MCPGenerationError",
     # Phase 6 - CLIP Evaluation
     "CLIPEvaluator",
     "EvaluationResult",

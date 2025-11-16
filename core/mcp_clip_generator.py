@@ -16,6 +16,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from .mcp_client import MCPClient
 from .mcp_selector import MCPSelector, MCPServer
 from .utils import ensure_dir, get_iso_timestamp
 
@@ -70,6 +71,7 @@ class MCPClipGenerator:
         output_dir: Path,
         max_parallel: int = 3,
         max_retries: int = 2,
+        mock_mode: bool = False,
     ):
         """
         Initialize MCP Clip Generator.
@@ -79,16 +81,26 @@ class MCPClipGenerator:
             output_dir: Output directory for generated clips
             max_parallel: Maximum parallel generations
             max_retries: Maximum retry attempts per clip
+            mock_mode: If True, use mock generation (no real MCP calls)
         """
         self.mcp_selector = MCPSelector(mcp_config)
         self.output_dir = Path(output_dir)
         self.max_parallel = max_parallel
         self.max_retries = max_retries
+        self.mock_mode = mock_mode
+
+        # Initialize MCP client for real generation
+        if not mock_mode:
+            self.mcp_client = MCPClient()
+        else:
+            self.mcp_client = None
 
         ensure_dir(self.output_dir)
 
+        mode_str = "MOCK" if mock_mode else "REAL"
         logger.info(
-            f"MCPClipGenerator initialized: output={self.output_dir}, max_parallel={max_parallel}"
+            f"MCPClipGenerator initialized ({mode_str}): "
+            f"output={self.output_dir}, max_parallel={max_parallel}"
         )
 
     async def generate_clip(
@@ -210,9 +222,6 @@ class MCPClipGenerator:
         """
         Call MCP server to generate clip.
 
-        This is a placeholder for actual MCP integration.
-        In production, this would call the actual MCP API.
-
         Args:
             mcp_server: MCP server to use
             clip_design: Clip design
@@ -221,30 +230,100 @@ class MCPClipGenerator:
 
         Returns:
             Path to generated video file
+
+        Raises:
+            MCPGenerationError: If generation fails
         """
         # Extract generation parameters
         prompt = clip_design.get("ai_generation_prompt", clip_design.get("visual_description", ""))
         duration = clip_design.get("duration", 4.0)
 
+        # Check if Phase 3 selected a specific model
+        model_id = clip_design.get("selected_model")
+
+        if self.mock_mode:
+            # Mock mode: simulate generation
+            logger.debug(
+                f"MOCK: Simulating generation for clip {clip_id} "
+                f"(prompt='{prompt[:50]}...', duration={duration})"
+            )
+            await asyncio.sleep(0.1)  # Simulate generation time
+
+            # Create placeholder file
+            output_filename = f"clip_{clip_id:03d}_mock.mp4"
+            output_path = self.output_dir / output_filename
+            output_path.touch()  # Create empty file
+
+            logger.debug(f"MOCK: Generated clip at {output_path}")
+            return output_path
+
+        # Real mode: use MCPClient
+        if not model_id:
+            # No model specified - use MCP selector's recommendation
+            # Extract model from mcp_server.name or use default
+            logger.warning(
+                f"No selected_model in clip_design for clip {clip_id}. "
+                f"Using MCP server name: {mcp_server.name}"
+            )
+            model_id = mcp_server.name
+
         logger.debug(
-            f"MCP Request to {mcp_server.endpoint}: prompt='{prompt[:50]}...', duration={duration}"
+            f"Generating via Kamuicode MCP: model={model_id}, "
+            f"prompt='{prompt[:50]}...', duration={duration}"
         )
 
-        # TODO: Actual MCP API call
-        # For now, simulate generation with delay
-        await asyncio.sleep(2.0)  # Simulate generation time
+        # Call MCP via MCPClient
+        result = await self.mcp_client.generate_video(
+            model_id=model_id, prompt=prompt, duration=duration
+        )
 
-        # In production, this would be the actual generated file from MCP
-        # For now, create a placeholder path
-        output_filename = f"clip_{clip_id:03d}_{mcp_server.name}.mp4"
+        if not result["success"]:
+            error_msg = result.get("error", "Unknown error")
+            raise MCPGenerationError(f"MCP generation failed for clip {clip_id}: {error_msg}")
+
+        # Download video from URL
+        video_url = result["video_url"]
+        output_filename = f"clip_{clip_id:03d}_{model_id.replace('-', '_')}.mp4"
         output_path = self.output_dir / output_filename
 
-        # TODO: Save actual generated video from MCP response
-        # For now, just create the path (file doesn't exist yet)
+        logger.info(f"Downloading video from {video_url}...")
+        await self._download_video(video_url, output_path)
 
         logger.debug(f"Generated clip saved to: {output_path}")
-
         return output_path
+
+    async def _download_video(self, url: str, output_path: Path) -> None:
+        """
+        Download video from URL to local file.
+
+        Args:
+            url: Video URL
+            output_path: Output file path
+
+        Raises:
+            MCPGenerationError: If download fails
+        """
+        try:
+            import aiohttp
+
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as response:
+                    if response.status != 200:
+                        raise MCPGenerationError(
+                            f"Failed to download video: HTTP {response.status}"
+                        )
+
+                    # Download in chunks
+                    with open(output_path, "wb") as f:
+                        async for chunk in response.content.iter_chunked(8192):
+                            f.write(chunk)
+
+            logger.info(f"Video downloaded successfully: {output_path}")
+
+        except ImportError:
+            raise MCPGenerationError("aiohttp not installed. Run: pip install aiohttp")
+        except Exception as e:
+            raise MCPGenerationError(f"Failed to download video: {e}")
 
     async def generate_all_clips(
         self, clip_designs: List[Dict[str, Any]], strategies: Optional[List[Dict[str, Any]]] = None
