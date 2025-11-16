@@ -9,6 +9,15 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from .constants import (
+    DEFAULT_QUALITY_THRESHOLD,
+    DEFAULT_MAX_ITERATIONS,
+    PHASE_0_AUDIO_ANALYSIS,
+    PHASE_1_STORY_MESSAGE,
+    PHASE_2_SECTION_BREAKDOWN,
+    PHASE_3_CLIP_DESIGN,
+    PHASE_4_REFINEMENT,
+)
 from .shared_state import SharedState
 from .agent_executor import AgentExecutor
 from .evaluation_agent import EvaluationAgent
@@ -34,8 +43,8 @@ class OrchestratorAgent:
         self,
         session_id: str,
         claude_cli: str = "claude",
-        quality_threshold: float = 70.0,
-        max_iterations: int = 3,
+        quality_threshold: float = DEFAULT_QUALITY_THRESHOLD,
+        max_iterations: int = DEFAULT_MAX_ITERATIONS,
     ):
         """
         Initialize Orchestrator Agent.
@@ -169,29 +178,29 @@ class OrchestratorAgent:
         context = {}
 
         # Phase 0: Audio analysis
-        phase0_data = self.state.get_phase_data(0)
+        phase0_data = self.state.get_phase_data(PHASE_0_AUDIO_ANALYSIS)
         if phase0_data:
             context["audio_analysis"] = phase0_data
 
         # Phase 1: Story & Message (no prerequisites)
-        if phase_num == 1:
+        if phase_num == PHASE_1_STORY_MESSAGE:
             return context
 
         # Phase 2: Section Division (needs Phase 1)
-        if phase_num >= 2:
-            phase1_data = self.state.get_phase_data(1)
+        if phase_num >= PHASE_2_SECTION_BREAKDOWN:
+            phase1_data = self.state.get_phase_data(PHASE_1_STORY_MESSAGE)
             if phase1_data and "winner" in phase1_data:
                 context["story"] = phase1_data["winner"]
 
         # Phase 3: Clip Division (needs Phase 1, 2)
-        if phase_num >= 3:
-            phase2_data = self.state.get_phase_data(2)
+        if phase_num >= PHASE_3_CLIP_DESIGN:
+            phase2_data = self.state.get_phase_data(PHASE_2_SECTION_BREAKDOWN)
             if phase2_data and "winner" in phase2_data:
                 context["sections"] = phase2_data["winner"]
 
         # Phase 4: Generation Strategy (needs Phase 1, 2, 3)
-        if phase_num >= 4:
-            phase3_data = self.state.get_phase_data(3)
+        if phase_num >= PHASE_4_REFINEMENT:
+            phase3_data = self.state.get_phase_data(PHASE_3_CLIP_DESIGN)
             if phase3_data and "winner" in phase3_data:
                 context["clips"] = phase3_data["winner"]
 
@@ -251,7 +260,7 @@ class OrchestratorAgent:
             raise FileNotFoundError(f"Audio file not found: {audio_file}")
 
         # Mark phase started
-        self.state.mark_phase_started(0)
+        self.state.mark_phase_started(PHASE_0_AUDIO_ANALYSIS)
 
         # Create output directory
         output_dir = self.session_dir / "phase0"
@@ -279,7 +288,7 @@ class OrchestratorAgent:
         write_json(result_file, result)
 
         # Mark phase completed
-        self.state.mark_phase_completed(0, result)
+        self.state.mark_phase_completed(PHASE_0_AUDIO_ANALYSIS, result)
 
         logger.info("✓ Phase 0 completed")
         logger.info(f"  Duration: {result['duration']:.1f}s")

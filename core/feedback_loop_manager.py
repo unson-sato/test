@@ -10,6 +10,10 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 from .agent_executor import AgentExecutor, AgentResult
+from .constants import (
+    DEFAULT_QUALITY_THRESHOLD,
+    DEFAULT_MAX_ITERATIONS,
+)
 from .evaluation_agent import EvaluationAgent, SelectionResult
 from .utils import get_iso_timestamp
 
@@ -60,8 +64,8 @@ class FeedbackLoopManager:
         self,
         agent_executor: AgentExecutor,
         evaluation_agent: EvaluationAgent,
-        quality_threshold: float = 70.0,
-        max_iterations: int = 3,
+        quality_threshold: float = DEFAULT_QUALITY_THRESHOLD,
+        max_iterations: int = DEFAULT_MAX_ITERATIONS,
     ):
         """
         Initialize Feedback Loop Manager.

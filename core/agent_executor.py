@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+# Future: SUBPROCESS_TIMEOUT, DEFAULT_AGENT_TIMEOUT_SECONDS from constants
 from .utils import get_project_root
 
 
@@ -51,7 +52,18 @@ class AgentExecutor:
         Args:
             claude_cli: Path to Claude CLI executable
             max_parallel: Maximum parallel agent executions
+
+        Raises:
+            ValueError: If claude_cli contains potentially dangerous characters
         """
+        # Security: Validate claude_cli path to prevent command injection
+        dangerous_chars = {"|", "&", ";", "$", "`", "\n", "\r", "(", ")", "<", ">", '"', "'"}
+        if any(char in claude_cli for char in dangerous_chars):
+            raise ValueError(
+                f"Invalid claude_cli path: contains potentially dangerous characters. "
+                f"Path: {claude_cli}"
+            )
+
         self.claude_cli = claude_cli
         self.max_parallel = max_parallel
         logger.info(
@@ -90,6 +102,7 @@ class AgentExecutor:
 
         # Build Claude CLI command
         # claude -p prompt.md --dangerous-skip-permission --output-format json < context.json
+        # Security: Arguments are built as separate list items, never concatenated strings
         cmd = [
             self.claude_cli,
             "-p",
@@ -102,7 +115,9 @@ class AgentExecutor:
         logger.debug(f"Running {director_type} agent: {' '.join(cmd)}")
 
         try:
-            # Run agent
+            # Security: Using create_subprocess_exec (not shell) to prevent command injection.
+            # All arguments are passed as separate list items via *cmd expansion, not concatenated
+            # strings or shell evaluation. This prevents shell metacharacters from being interpreted.
             process = await asyncio.create_subprocess_exec(
                 *cmd,
                 stdin=asyncio.subprocess.PIPE,

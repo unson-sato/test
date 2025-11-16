@@ -9,7 +9,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from .utils import get_session_dir, read_json, write_json, get_iso_timestamp
+from .atomic_file import atomic_write_json
+from .utils import get_session_dir, read_json, get_iso_timestamp
 
 
 logger = logging.getLogger(__name__)
@@ -234,7 +235,7 @@ class SharedState:
         }
 
     def save(self) -> None:
-        """Save state to disk."""
+        """Save state to disk atomically."""
         self.session_dir.mkdir(parents=True, exist_ok=True)
 
         state_data = {
@@ -264,7 +265,7 @@ class SharedState:
             },
         }
 
-        write_json(self.state_file, state_data)
+        atomic_write_json(self.state_file, state_data, indent=2)
 
     def _load_state(self) -> None:
         """Load state from disk."""

@@ -1,26 +1,28 @@
 # MV Orchestra v3.0 - Python Dependencies
+# All versions pinned for reproducibility and security
 
 # Core dependencies (optional - for full functionality)
 # Note: Claude CLI is required and must be installed separately
 
 # Phase 0: Audio Analysis
-librosa>=0.10.0  # Audio feature extraction (BPM, beat tracking)
-soundfile>=0.12.0  # Audio file I/O
+librosa==0.10.2.post1  # Audio feature extraction (BPM, beat tracking)
+soundfile==0.12.1  # Audio file I/O
+numpy==1.26.4  # Numerical operations (required by librosa)
+scipy==1.13.1  # Scientific computing (required by librosa)
 
 # Phase 6: CLIP Quality Evaluation
-transformers>=4.30.0  # CLIP model
-torch>=2.0.0  # PyTorch backend
-Pillow>=9.5.0  # Image processing
+transformers==4.46.3  # CLIP model (using stable version for compatibility)
+torch==2.5.1  # PyTorch backend
+Pillow==11.0.0  # Image processing
 
 # Development tools
-pytest>=7.4.0  # Unit testing
-pytest-asyncio>=0.21.0  # Async test support
-pytest-cov>=4.1.0  # Code coverage
-mypy>=1.4.0  # Static type checking
-flake8>=6.0.0  # Linting
-black>=23.7.0  # Code formatting
-isort>=5.12.0  # Import sorting
+pytest==8.3.4  # Unit testing
+pytest-asyncio==0.24.0  # Async test support
+pytest-cov==6.0.0  # Code coverage
+mypy==1.13.0  # Static type checking
+flake8==7.1.1  # Linting
+black==24.10.0  # Code formatting
+isort==5.13.2  # Import sorting
 
-# Optional: Enhanced features
-# numpy>=1.24.0  # Numerical operations (installed with librosa)
-# scipy>=1.10.0  # Scientific computing (installed with librosa)
+# Security note: These versions are current as of 2024-11
+# Update regularly and check for security advisories

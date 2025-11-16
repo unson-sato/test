@@ -12,6 +12,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from .constants import (  # noqa: F401
+    DEFAULT_TRANSITION_DURATION,
+    FFMPEG_TIMEOUT,
+    DEFAULT_VIDEO_CODEC,
+)
 from .utils import get_iso_timestamp
 
 logger = logging.getLogger(__name__)

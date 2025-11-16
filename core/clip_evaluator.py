@@ -9,6 +9,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
+from .constants import (
+    CLIP_SCORE_THRESHOLD,
+    TECHNICAL_SCORE_THRESHOLD,
+)
 from .utils import get_iso_timestamp
 
 logger = logging.getLogger(__name__)
@@ -57,7 +61,7 @@ class CLIPEvaluator:
         self,
         clip_model: str = "ViT-B/32",
         similarity_threshold: float = 0.75,
-        technical_threshold: float = 0.70,
+        technical_threshold: float = CLIP_SCORE_THRESHOLD,
     ):
         """
         Initialize CLIP Evaluator.
@@ -157,7 +161,7 @@ class CLIPEvaluator:
         )
 
         issues = []
-        if clip_similarity < 0.80:
+        if clip_similarity < TECHNICAL_SCORE_THRESHOLD:
             issues.append("Clip similarity slightly below optimal")
         if not meets_threshold:
             issues.append("Overall quality below threshold")
@@ -214,13 +218,13 @@ class CLIPEvaluator:
                 f"CLIP similarity below threshold ({clip_similarity:.2f} < {self.similarity_threshold})"
             )
 
-        if tech_quality.resolution_score < 0.80:
+        if tech_quality.resolution_score < TECHNICAL_SCORE_THRESHOLD:
             issues.append("Resolution quality issue")
 
-        if tech_quality.framerate_score < 0.80:
+        if tech_quality.framerate_score < TECHNICAL_SCORE_THRESHOLD:
             issues.append("Framerate issue")
 
-        if tech_quality.duration_score < 0.80:
+        if tech_quality.duration_score < TECHNICAL_SCORE_THRESHOLD:
             issues.append("Duration mismatch")
 
         if tech_quality.overall_score < self.technical_threshold:

@@ -4,6 +4,12 @@ Core components for MV Orchestra v3.0
 This module contains all core components for the music video orchestration system.
 """
 
+# Constants
+from . import constants
+
+# Security
+from .security import SecurityError
+
 # Shared state and utilities
 from .shared_state import SharedState, PhaseState, PhaseAttempt
 from .utils import (
@@ -31,6 +37,9 @@ from .effects_generator import EffectsGenerator, EffectsCode, EffectsEvaluation
 from .remotion_renderer import RemotionRenderer, RenderConfig, RenderResult
 
 __all__ = [
+    # Constants and security
+    "constants",
+    "SecurityError",
     # State and utilities
     "SharedState",
     "PhaseState",
