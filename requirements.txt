@@ -1,0 +1,9 @@
+# Music Video Shot Generator - Python Dependencies
+
+# AI Providers (optional - choose one or both)
+anthropic>=0.18.0  # For Claude AI integration
+# openai>=1.0.0    # Uncomment for OpenAI GPT integration
+
+# Core dependencies (none - uses Python stdlib)
+# The tool works with just Python 3.8+ standard library
+# AI packages above are optional for enhanced generation
