@@ -61,10 +61,16 @@ shared-workspace/input/*.flac
 # Generated outputs
 output/
 renders/
+mv_workspace/
 *.mp4
 *.avi
 *.mov
 *.mkv
+
+# Test files
+test_*.wav
+test_*.mp3
+test_*.json
 
 # Temporary files
 *.tmp
