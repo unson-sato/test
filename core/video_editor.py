@@ -10,7 +10,7 @@ import logging
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 from .utils import get_iso_timestamp
 
@@ -19,12 +19,14 @@ logger = logging.getLogger(__name__)
 
 class VideoEditError(Exception):
     """Raised when video editing fails"""
+
     pass
 
 
 @dataclass
 class TrimSpec:
     """Specification for trimming a clip"""
+
     clip_id: int
     input_path: Path
     output_path: Path
@@ -36,6 +38,7 @@ class TrimSpec:
 @dataclass
 class MergeSpec:
     """Specification for merging clips"""
+
     clips: List[Path]
     output_path: Path
     transition_duration: float = 0.0  # seconds
@@ -45,6 +48,7 @@ class MergeSpec:
 @dataclass
 class EditResult:
     """Result of video editing operation"""
+
     success: bool
     output_path: Optional[Path] = None
     duration: float = 0.0
@@ -63,10 +67,7 @@ class VideoEditor:
     """
 
     def __init__(
-        self,
-        ffmpeg_path: str = "ffmpeg",
-        ffprobe_path: str = "ffprobe",
-        mock_mode: bool = True
+        self, ffmpeg_path: str = "ffmpeg", ffprobe_path: str = "ffprobe", mock_mode: bool = True
     ):
         """
         Initialize Video Editor.
@@ -87,7 +88,7 @@ class VideoEditor:
                     [ffmpeg_path, "-version"],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
-                    check=True
+                    check=True,
                 )
             except (subprocess.CalledProcessError, FileNotFoundError) as e:
                 logger.warning(f"ffmpeg not available: {e}. Falling back to mock mode.")
@@ -115,19 +116,21 @@ class VideoEditor:
             # ffmpeg -i input.mp4 -ss start_time -t duration -c copy output.mp4
             cmd = [
                 self.ffmpeg_path,
-                "-i", str(spec.input_path),
-                "-ss", str(spec.start_time),
-                "-t", str(spec.duration),
-                "-c", "copy",  # Copy codec for fast trimming
+                "-i",
+                str(spec.input_path),
+                "-ss",
+                str(spec.start_time),
+                "-t",
+                str(spec.duration),
+                "-c",
+                "copy",  # Copy codec for fast trimming
                 "-y",  # Overwrite output
-                str(spec.output_path)
+                str(spec.output_path),
             ]
 
             # Run ffmpeg
             process = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
+                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
 
             stdout, stderr = await process.communicate()
@@ -135,33 +138,20 @@ class VideoEditor:
             if process.returncode != 0:
                 error_msg = stderr.decode() if stderr else "Unknown error"
                 logger.error(f"ffmpeg trim failed: {error_msg}")
-                return EditResult(
-                    success=False,
-                    error=f"ffmpeg trim failed: {error_msg}"
-                )
+                return EditResult(success=False, error=f"ffmpeg trim failed: {error_msg}")
 
             # Verify output exists
             if not spec.output_path.exists():
-                return EditResult(
-                    success=False,
-                    error="Output file not created"
-                )
+                return EditResult(success=False, error="Output file not created")
 
             # Get actual duration
             actual_duration = await self._get_video_duration(spec.output_path)
 
-            return EditResult(
-                success=True,
-                output_path=spec.output_path,
-                duration=actual_duration
-            )
+            return EditResult(success=True, output_path=spec.output_path, duration=actual_duration)
 
         except Exception as e:
             logger.error(f"Trim failed: {e}")
-            return EditResult(
-                success=False,
-                error=str(e)
-            )
+            return EditResult(success=False, error=str(e))
 
     async def merge_clips(self, spec: MergeSpec) -> EditResult:
         """
@@ -188,17 +178,14 @@ class VideoEditor:
 
         except Exception as e:
             logger.error(f"Merge failed: {e}")
-            return EditResult(
-                success=False,
-                error=str(e)
-            )
+            return EditResult(success=False, error=str(e))
 
     async def _concat_clips(self, spec: MergeSpec) -> EditResult:
         """Concatenate clips without transitions using concat demuxer"""
         # Create concat file
         concat_file = spec.output_path.parent / f"{spec.output_path.stem}_concat.txt"
 
-        with open(concat_file, 'w') as f:
+        with open(concat_file, "w") as f:
             for clip_path in spec.clips:
                 f.write(f"file '{clip_path.absolute()}'\n")
 
@@ -206,18 +193,20 @@ class VideoEditor:
         # ffmpeg -f concat -safe 0 -i concat.txt -c copy output.mp4
         cmd = [
             self.ffmpeg_path,
-            "-f", "concat",
-            "-safe", "0",
-            "-i", str(concat_file),
-            "-c", "copy",
+            "-f",
+            "concat",
+            "-safe",
+            "0",
+            "-i",
+            str(concat_file),
+            "-c",
+            "copy",
             "-y",
-            str(spec.output_path)
+            str(spec.output_path),
         ]
 
         process = await asyncio.create_subprocess_exec(
-            *cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
+            *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
         )
 
         stdout, stderr = await process.communicate()
@@ -228,25 +217,15 @@ class VideoEditor:
         if process.returncode != 0:
             error_msg = stderr.decode() if stderr else "Unknown error"
             logger.error(f"ffmpeg concat failed: {error_msg}")
-            return EditResult(
-                success=False,
-                error=f"ffmpeg concat failed: {error_msg}"
-            )
+            return EditResult(success=False, error=f"ffmpeg concat failed: {error_msg}")
 
         if not spec.output_path.exists():
-            return EditResult(
-                success=False,
-                error="Output file not created"
-            )
+            return EditResult(success=False, error="Output file not created")
 
         # Get total duration
         total_duration = await self._get_video_duration(spec.output_path)
 
-        return EditResult(
-            success=True,
-            output_path=spec.output_path,
-            duration=total_duration
-        )
+        return EditResult(success=True, output_path=spec.output_path, duration=total_duration)
 
     async def _merge_with_transitions(self, spec: MergeSpec) -> EditResult:
         """Merge clips with transitions (crossfade, fade, etc.)"""
@@ -285,17 +264,16 @@ class VideoEditor:
         cmd = [
             self.ffmpeg_path,
             *[item for clip in spec.clips for item in ["-i", str(clip)]],  # Add all inputs
-            "-filter_complex", filter_complex,
+            "-filter_complex",
+            filter_complex,
             "-y",
-            str(spec.output_path)
+            str(spec.output_path),
         ]
 
         logger.debug(f"Running ffmpeg with transitions: {' '.join(cmd)}")
 
         process = await asyncio.create_subprocess_exec(
-            *cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
+            *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
         )
 
         stdout, stderr = await process.communicate()
@@ -303,31 +281,18 @@ class VideoEditor:
         if process.returncode != 0:
             error_msg = stderr.decode() if stderr else "Unknown error"
             logger.error(f"ffmpeg transition merge failed: {error_msg}")
-            return EditResult(
-                success=False,
-                error=f"ffmpeg transition merge failed: {error_msg}"
-            )
+            return EditResult(success=False, error=f"ffmpeg transition merge failed: {error_msg}")
 
         if not spec.output_path.exists():
-            return EditResult(
-                success=False,
-                error="Output file not created"
-            )
+            return EditResult(success=False, error="Output file not created")
 
         # Get total duration
         total_duration = await self._get_video_duration(spec.output_path)
 
-        return EditResult(
-            success=True,
-            output_path=spec.output_path,
-            duration=total_duration
-        )
+        return EditResult(success=True, output_path=spec.output_path, duration=total_duration)
 
     async def _build_2clip_transition(
-        self,
-        durations: List[float],
-        transition_dur: float,
-        transition_type: str
+        self, durations: List[float], transition_dur: float, transition_type: str
     ) -> str:
         """
         Build filter_complex for 2-clip transition.
@@ -353,10 +318,7 @@ class VideoEditor:
             return f"[0:v][1:v]xfade=transition=fade:duration={transition_dur}:offset={offset}[out];[out]"
 
     async def _build_multiclip_transition(
-        self,
-        durations: List[float],
-        transition_dur: float,
-        transition_type: str
+        self, durations: List[float], transition_dur: float, transition_type: str
     ) -> str:
         """
         Build filter_complex for multi-clip transition chain.
@@ -412,16 +374,17 @@ class VideoEditor:
         """Get video duration using ffprobe"""
         cmd = [
             self.ffprobe_path,
-            "-v", "error",
-            "-show_entries", "format=duration",
-            "-of", "default=noprint_wrappers=1:nokey=1",
-            str(video_path)
+            "-v",
+            "error",
+            "-show_entries",
+            "format=duration",
+            "-of",
+            "default=noprint_wrappers=1:nokey=1",
+            str(video_path),
         ]
 
         process = await asyncio.create_subprocess_exec(
-            *cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
+            *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
         )
 
         stdout, stderr = await process.communicate()
@@ -437,26 +400,16 @@ class VideoEditor:
     def _mock_trim(self, spec: TrimSpec) -> EditResult:
         """Mock trim operation"""
         logger.debug(f"MOCK: Trimming clip {spec.clip_id} to {spec.duration}s")
-        return EditResult(
-            success=True,
-            output_path=spec.output_path,
-            duration=spec.duration
-        )
+        return EditResult(success=True, output_path=spec.output_path, duration=spec.duration)
 
     def _mock_merge(self, spec: MergeSpec) -> EditResult:
         """Mock merge operation"""
         total_duration = sum(5.0 for _ in spec.clips)  # Assume 5s per clip
         logger.debug(f"MOCK: Merging {len(spec.clips)} clips, total duration: {total_duration}s")
-        return EditResult(
-            success=True,
-            output_path=spec.output_path,
-            duration=total_duration
-        )
+        return EditResult(success=True, output_path=spec.output_path, duration=total_duration)
 
     async def trim_all_clips(
-        self,
-        trim_specs: List[TrimSpec],
-        max_parallel: int = 3
+        self, trim_specs: List[TrimSpec], max_parallel: int = 3
     ) -> List[EditResult]:
         """
         Trim multiple clips in parallel.
@@ -497,10 +450,7 @@ class VideoEditor:
         return results
 
     def create_trim_specs(
-        self,
-        clips: List[Dict[str, Any]],
-        designs: List[Dict[str, Any]],
-        output_dir: Path
+        self, clips: List[Dict[str, Any]], designs: List[Dict[str, Any]], output_dir: Path
     ) -> List[TrimSpec]:
         """
         Create trim specifications from clip data and designs.
@@ -544,7 +494,7 @@ class VideoEditor:
                 output_path=output_path,
                 start_time=start_time,
                 duration=duration,
-                design=design
+                design=design,
             )
 
             specs.append(spec)

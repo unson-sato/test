@@ -7,7 +7,7 @@ Manages iterative improvement cycles with agent feedback.
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from .agent_executor import AgentExecutor, AgentResult
 from .evaluation_agent import EvaluationAgent, SelectionResult
@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class IterationResult:
     """Result of a single iteration"""
+
     iteration_num: int
     agent_results: List[AgentResult]
     evaluation: SelectionResult
@@ -31,6 +32,7 @@ class IterationResult:
 @dataclass
 class FeedbackLoopResult:
     """Result of complete feedback loop"""
+
     winner_name: str
     final_result: Dict[str, Any]
     final_score: float
@@ -59,7 +61,7 @@ class FeedbackLoopManager:
         agent_executor: AgentExecutor,
         evaluation_agent: EvaluationAgent,
         quality_threshold: float = 70.0,
-        max_iterations: int = 3
+        max_iterations: int = 3,
     ):
         """
         Initialize Feedback Loop Manager.
@@ -75,13 +77,12 @@ class FeedbackLoopManager:
         self.quality_threshold = quality_threshold
         self.max_iterations = max_iterations
 
-        logger.info(f"FeedbackLoopManager initialized: threshold={quality_threshold}, max_iter={max_iterations}")
+        logger.info(
+            f"FeedbackLoopManager initialized: threshold={quality_threshold}, max_iter={max_iterations}"
+        )
 
     async def run_with_feedback(
-        self,
-        phase_num: int,
-        initial_context: Dict[str, Any],
-        output_dir: Path
+        self, phase_num: int, initial_context: Dict[str, Any], output_dir: Path
     ) -> FeedbackLoopResult:
         """
         Run agents with feedback loop until quality threshold met.
@@ -114,9 +115,7 @@ class FeedbackLoopManager:
             # Step 1: Run all agents in parallel
             logger.info("Step 1: Running agents in parallel...")
             agent_results = await self.agent_executor.run_all_directors_parallel(
-                phase_num=phase_num,
-                context=context,
-                output_dir=iter_dir
+                phase_num=phase_num, context=context, output_dir=iter_dir
             )
 
             # Check if any agents succeeded
@@ -131,7 +130,7 @@ class FeedbackLoopManager:
                     "director_type": r.director_type,
                     "success": r.success,
                     "output": r.output,
-                    "execution_time": r.execution_time
+                    "execution_time": r.execution_time,
                 }
                 for r in agent_results
             ]
@@ -139,10 +138,7 @@ class FeedbackLoopManager:
             # Step 2: Evaluate and select winner
             logger.info("\nStep 2: Evaluating submissions...")
             evaluation = await self.evaluation_agent.evaluate_and_select(
-                phase_num=phase_num,
-                submissions=submissions,
-                context=context,
-                output_dir=iter_dir
+                phase_num=phase_num, submissions=submissions, context=context, output_dir=iter_dir
             )
 
             # Calculate score
@@ -160,7 +156,7 @@ class FeedbackLoopManager:
                 agent_results=agent_results,
                 evaluation=evaluation,
                 score=score,
-                improvement=improvement
+                improvement=improvement,
             )
             iterations.append(iteration_result)
 
@@ -171,12 +167,12 @@ class FeedbackLoopManager:
 
             # Step 4: Generate feedback and continue (if not last iteration)
             if iteration_num < self.max_iterations:
-                logger.info(f"\n⟲ Score below threshold, generating feedback for next iteration...")
+                logger.info("\n⟲ Score below threshold, generating feedback for next iteration...")
                 feedback = self._generate_feedback(evaluation, score)
                 context = self._update_context_with_feedback(context, feedback, iteration_result)
                 previous_score = score
             else:
-                logger.info(f"\n⚠ Max iterations reached ({self.max_iterations})")
+                logger.info("\n⚠ Max iterations reached ({})".format(self.max_iterations))
 
         # Final result
         final_iteration = iterations[-1] if iterations else None
@@ -184,7 +180,9 @@ class FeedbackLoopManager:
         if not final_iteration:
             raise RuntimeError("No successful iterations")
 
-        total_improvement = final_iteration.score - (iterations[0].score if len(iterations) > 1 else 0)
+        total_improvement = final_iteration.score - (
+            iterations[0].score if len(iterations) > 1 else 0
+        )
 
         result = FeedbackLoopResult(
             winner_name=final_iteration.evaluation.winner_name,
@@ -192,12 +190,12 @@ class FeedbackLoopManager:
             final_score=final_iteration.score,
             iteration_count=len(iterations),
             total_improvement=total_improvement,
-            iterations=iterations
+            iterations=iterations,
         )
 
-        logger.info(f"\n{'═' * 60}")
-        logger.info(f"FEEDBACK LOOP COMPLETE")
-        logger.info(f"{'═' * 60}")
+        logger.info("\n" + "═" * 60)
+        logger.info("FEEDBACK LOOP COMPLETE")
+        logger.info("═" * 60)
         logger.info(f"Final winner: {result.winner_name}")
         logger.info(f"Final score: {result.final_score:.1f}/100")
         logger.info(f"Iterations: {result.iteration_count}")
@@ -205,11 +203,7 @@ class FeedbackLoopManager:
 
         return result
 
-    def _generate_feedback(
-        self,
-        evaluation: SelectionResult,
-        score: float
-    ) -> Dict[str, Any]:
+    def _generate_feedback(self, evaluation: SelectionResult, score: float) -> Dict[str, Any]:
         """
         Generate feedback from evaluation result.
 
@@ -220,26 +214,29 @@ class FeedbackLoopManager:
         Returns:
             Feedback dictionary
         """
-        feedback = {
+        feedback: Dict[str, Any] = {
             "previous_winner": evaluation.winner_name,
             "previous_score": score,
             "evaluation_reasoning": evaluation.reasoning,
             "areas_to_improve": [],
-            "partial_adoptions": evaluation.partial_adoptions
+            "partial_adoptions": evaluation.partial_adoptions,
         }
 
         # Analyze scores to identify improvement areas
         if evaluation.scores:
-            avg_score = sum(evaluation.scores.values()) / len(evaluation.scores)
             max_score = max(evaluation.scores.values())
 
-            if score < 60:
-                feedback["areas_to_improve"].append("Overall quality needs significant improvement")
-            elif score < self.quality_threshold:
-                feedback["areas_to_improve"].append(f"Score needs to reach {self.quality_threshold}")
+            areas_to_improve = feedback["areas_to_improve"]
+            if isinstance(areas_to_improve, list):
+                if score < 60:
+                    areas_to_improve.append("Overall quality needs significant improvement")
+                elif score < self.quality_threshold:
+                    areas_to_improve.append(f"Score needs to reach {self.quality_threshold}")
 
-            if max_score - score > 10:
-                feedback["areas_to_improve"].append("Consider incorporating strengths from other submissions")
+                if max_score - score > 10:
+                    areas_to_improve.append(
+                        "Consider incorporating strengths from other submissions"
+                    )
 
         # Add specific improvement suggestions
         if evaluation.partial_adoptions:
@@ -251,10 +248,7 @@ class FeedbackLoopManager:
         return feedback
 
     def _update_context_with_feedback(
-        self,
-        context: Dict[str, Any],
-        feedback: Dict[str, Any],
-        iteration_result: IterationResult
+        self, context: Dict[str, Any], feedback: Dict[str, Any], iteration_result: IterationResult
     ) -> Dict[str, Any]:
         """
         Update context with feedback for next iteration.
@@ -273,11 +267,13 @@ class FeedbackLoopManager:
         if "feedback_history" not in updated_context:
             updated_context["feedback_history"] = []
 
-        updated_context["feedback_history"].append({
-            "iteration": iteration_result.iteration_num,
-            "feedback": feedback,
-            "score": iteration_result.score
-        })
+        updated_context["feedback_history"].append(
+            {
+                "iteration": iteration_result.iteration_num,
+                "feedback": feedback,
+                "score": iteration_result.score,
+            }
+        )
 
         # Add latest feedback
         updated_context["feedback"] = feedback

@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class MCPServer:
     """MCP Server configuration"""
+
     name: str
     endpoint: str
     capabilities: List[str]
@@ -29,6 +30,7 @@ class MCPServer:
 @dataclass
 class ClipRequirements:
     """Requirements extracted from clip design"""
+
     style: str
     motion_intensity: str
     visual_complexity: str
@@ -66,15 +68,13 @@ class MCPSelector:
                 endpoint=server_config.get("endpoint", ""),
                 capabilities=server_config.get("capabilities", []),
                 priority=server_config.get("priority", 10),
-                cost_per_clip=server_config.get("cost_per_clip", 1.0)
+                cost_per_clip=server_config.get("cost_per_clip", 1.0),
             )
 
         return servers
 
     def select_best_mcp(
-        self,
-        clip_design: Dict[str, Any],
-        preferred_mcp: Optional[str] = None
+        self, clip_design: Dict[str, Any], preferred_mcp: Optional[str] = None
     ) -> MCPServer:
         """
         Select best MCP server for clip.
@@ -143,7 +143,7 @@ class MCPSelector:
             motion_intensity=motion_intensity,
             visual_complexity=visual_complexity,
             aspect_ratio=clip_design.get("technical_specs", {}).get("aspect_ratio", "16:9"),
-            duration=clip_design.get("duration", 4.0)
+            duration=clip_design.get("duration", 4.0),
         )
 
     def _find_matching_servers(self, requirements: ClipRequirements) -> List[MCPServer]:
@@ -160,23 +160,16 @@ class MCPSelector:
 
         return candidates
 
-    def _matches_capabilities(
-        self,
-        server: MCPServer,
-        requirements: ClipRequirements
-    ) -> bool:
+    def _matches_capabilities(self, server: MCPServer, requirements: ClipRequirements) -> bool:
         """Check if server capabilities match requirements"""
         # Check style match
-        style_match = (
-            requirements.style in server.capabilities or
-            "general" in server.capabilities
-        )
+        style_match = requirements.style in server.capabilities or "general" in server.capabilities
 
         # Check motion match
         motion_keywords = {
             "high": ["high_motion", "dynamic", "fast"],
             "medium": ["general"],
-            "low": ["general", "static"]
+            "low": ["general", "static"],
         }
 
         motion_match = any(
@@ -187,9 +180,7 @@ class MCPSelector:
         return style_match or motion_match or "general" in server.capabilities
 
     def _rank_candidates(
-        self,
-        candidates: List[MCPServer],
-        requirements: ClipRequirements
+        self, candidates: List[MCPServer], requirements: ClipRequirements
     ) -> MCPServer:
         """Rank candidates and return best"""
         # Sort by priority (lower number = higher priority)

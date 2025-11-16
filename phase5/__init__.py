@@ -7,4 +7,4 @@ Phase 3 clip designs and Phase 4 generation strategies.
 
 from .runner import run_phase5
 
-__all__ = ['run_phase5']
+__all__ = ["run_phase5"]

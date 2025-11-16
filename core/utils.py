@@ -59,7 +59,7 @@ def read_json(file_path: Path) -> Dict[str, Any]:
     if isinstance(file_path, str):
         file_path = Path(file_path)
 
-    with open(file_path, 'r') as f:
+    with open(file_path, "r") as f:
         return json.load(f)
 
 
@@ -78,7 +78,7 @@ def write_json(file_path: Path, data: Dict[str, Any], indent: int = 2) -> None:
     # Ensure parent directory exists
     file_path.parent.mkdir(parents=True, exist_ok=True)
 
-    with open(file_path, 'w') as f:
+    with open(file_path, "w") as f:
         json.dump(data, f, indent=indent, ensure_ascii=False)
 
 

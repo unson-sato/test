@@ -5,10 +5,9 @@ Main orchestrator coordinating the entire Phase 0-9 pipeline.
 Manages design phases (Phase 1-4) with multi-agent competition and evaluation.
 """
 
-import asyncio
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from .shared_state import SharedState
 from .agent_executor import AgentExecutor
@@ -36,7 +35,7 @@ class OrchestratorAgent:
         session_id: str,
         claude_cli: str = "claude",
         quality_threshold: float = 70.0,
-        max_iterations: int = 3
+        max_iterations: int = 3,
     ):
         """
         Initialize Orchestrator Agent.
@@ -60,16 +59,12 @@ class OrchestratorAgent:
             agent_executor=self.agent_executor,
             evaluation_agent=self.evaluation_agent,
             quality_threshold=quality_threshold,
-            max_iterations=max_iterations
+            max_iterations=max_iterations,
         )
 
-        logger.info(f"OrchestratorAgent initialized for session: {session_id}")
+        logger.info("OrchestratorAgent initialized for session: {}".format(session_id))
 
-    async def run_design_phases(
-        self,
-        start_phase: int = 1,
-        end_phase: int = 4
-    ) -> Dict[str, Any]:
+    async def run_design_phases(self, start_phase: int = 1, end_phase: int = 4) -> Dict[str, Any]:
         """
         Run design phases (Phase 1-4) with multi-agent competition.
 
@@ -134,9 +129,7 @@ class OrchestratorAgent:
         logger.info(f"Running Phase {phase_num} with feedback loop...")
 
         result = await self.feedback_manager.run_with_feedback(
-            phase_num=phase_num,
-            initial_context=context,
-            output_dir=output_dir
+            phase_num=phase_num, initial_context=context, output_dir=output_dir
         )
 
         # Save results
@@ -147,7 +140,7 @@ class OrchestratorAgent:
             "iterations": result.iteration_count,
             "final_score": result.final_score,
             "improvement": result.total_improvement,
-            "timestamp": get_iso_timestamp()
+            "timestamp": get_iso_timestamp(),
         }
 
         write_json(result_file, result_data)
@@ -204,10 +197,7 @@ class OrchestratorAgent:
 
         return context
 
-    async def run_full_pipeline(
-        self,
-        audio_file: Optional[Path] = None
-    ) -> Dict[str, Any]:
+    async def run_full_pipeline(self, audio_file: Optional[Path] = None) -> Dict[str, Any]:
         """
         Run complete Phase 0-9 pipeline.
 
@@ -281,7 +271,7 @@ class OrchestratorAgent:
             "bpm": 120,  # Placeholder
             "beats": [],  # Placeholder
             "sections": [],  # Placeholder
-            "timestamp": get_iso_timestamp()
+            "timestamp": get_iso_timestamp(),
         }
 
         # Save results
@@ -291,7 +281,7 @@ class OrchestratorAgent:
         # Mark phase completed
         self.state.mark_phase_completed(0, result)
 
-        logger.info(f"✓ Phase 0 completed")
+        logger.info("✓ Phase 0 completed")
         logger.info(f"  Duration: {result['duration']:.1f}s")
         logger.info(f"  BPM: {result['bpm']}")
 

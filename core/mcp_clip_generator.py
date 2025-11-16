@@ -17,19 +17,21 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from .mcp_selector import MCPSelector, MCPServer
-from .utils import ensure_dir, get_iso_timestamp, write_json
+from .utils import ensure_dir, get_iso_timestamp
 
 logger = logging.getLogger(__name__)
 
 
 class MCPGenerationError(Exception):
     """Raised when MCP generation fails"""
+
     pass
 
 
 @dataclass
 class VideoClip:
     """Generated video clip"""
+
     clip_id: int
     path: Path
     design: Dict[str, Any]
@@ -42,6 +44,7 @@ class VideoClip:
 @dataclass
 class GenerationResult:
     """Result of clip generation"""
+
     clip_id: int
     success: bool
     clip: Optional[VideoClip] = None
@@ -66,7 +69,7 @@ class MCPClipGenerator:
         mcp_config: Dict[str, Any],
         output_dir: Path,
         max_parallel: int = 3,
-        max_retries: int = 2
+        max_retries: int = 2,
     ):
         """
         Initialize MCP Clip Generator.
@@ -84,13 +87,15 @@ class MCPClipGenerator:
 
         ensure_dir(self.output_dir)
 
-        logger.info(f"MCPClipGenerator initialized: output={self.output_dir}, max_parallel={max_parallel}")
+        logger.info(
+            f"MCPClipGenerator initialized: output={self.output_dir}, max_parallel={max_parallel}"
+        )
 
     async def generate_clip(
         self,
         clip_design: Dict[str, Any],
         clip_index: int,
-        strategy: Optional[Dict[str, Any]] = None
+        strategy: Optional[Dict[str, Any]] = None,
     ) -> GenerationResult:
         """
         Generate a single clip.
@@ -118,14 +123,16 @@ class MCPClipGenerator:
         # Attempt generation with retries
         for attempt in range(1, self.max_retries + 1):
             try:
-                logger.debug(f"Clip {clip_id}: Attempt {attempt}/{self.max_retries} using {mcp_server.name}")
+                logger.debug(
+                    f"Clip {clip_id}: Attempt {attempt}/{self.max_retries} using {mcp_server.name}"
+                )
 
                 # Generate clip via MCP
                 clip_path = await self._call_mcp_server(
                     mcp_server=mcp_server,
                     clip_design=clip_design,
                     strategy=strategy,
-                    clip_id=clip_id
+                    clip_id=clip_id,
                 )
 
                 # Create VideoClip object
@@ -139,8 +146,10 @@ class MCPClipGenerator:
                     metadata={
                         "attempt": attempt,
                         "duration": clip_design.get("duration", 0),
-                        "aspect_ratio": clip_design.get("technical_specs", {}).get("aspect_ratio", "16:9")
-                    }
+                        "aspect_ratio": clip_design.get("technical_specs", {}).get(
+                            "aspect_ratio", "16:9"
+                        ),
+                    },
                 )
 
                 logger.info(f"✓ Clip {clip_id} generated successfully ({generation_time:.1f}s)")
@@ -150,7 +159,7 @@ class MCPClipGenerator:
                     success=True,
                     clip=clip,
                     attempts=attempt,
-                    total_time=generation_time
+                    total_time=generation_time,
                 )
 
             except Exception as e:
@@ -161,21 +170,25 @@ class MCPClipGenerator:
                     if strategy and "fallback_strategy" in strategy:
                         fallback_mcp_name = strategy["fallback_strategy"].get("alternative_mcp")
                         if fallback_mcp_name:
-                            fallback_server = self.mcp_selector.get_server_by_name(fallback_mcp_name)
+                            fallback_server = self.mcp_selector.get_server_by_name(
+                                fallback_mcp_name
+                            )
                             if fallback_server:
                                 logger.info(f"Trying fallback MCP: {fallback_mcp_name}")
                                 mcp_server = fallback_server
                 else:
                     # Final attempt failed
                     total_time = time.time() - start_time
-                    logger.error(f"✗ Clip {clip_id} generation failed after {self.max_retries} attempts")
+                    logger.error(
+                        f"✗ Clip {clip_id} generation failed after {self.max_retries} attempts"
+                    )
 
                     return GenerationResult(
                         clip_id=clip_id,
                         success=False,
                         error=str(e),
                         attempts=attempt,
-                        total_time=total_time
+                        total_time=total_time,
                     )
 
         # Should not reach here
@@ -184,7 +197,7 @@ class MCPClipGenerator:
             success=False,
             error="Max retries exceeded",
             attempts=self.max_retries,
-            total_time=time.time() - start_time
+            total_time=time.time() - start_time,
         )
 
     async def _call_mcp_server(
@@ -192,7 +205,7 @@ class MCPClipGenerator:
         mcp_server: MCPServer,
         clip_design: Dict[str, Any],
         strategy: Optional[Dict[str, Any]],
-        clip_id: int
+        clip_id: int,
     ) -> Path:
         """
         Call MCP server to generate clip.
@@ -213,11 +226,9 @@ class MCPClipGenerator:
         prompt = clip_design.get("ai_generation_prompt", clip_design.get("visual_description", ""))
         duration = clip_design.get("duration", 4.0)
 
-        params = {}
-        if strategy and "generation_parameters" in strategy:
-            params = strategy["generation_parameters"]
-
-        logger.debug(f"MCP Request to {mcp_server.endpoint}: prompt='{prompt[:50]}...', duration={duration}")
+        logger.debug(
+            f"MCP Request to {mcp_server.endpoint}: prompt='{prompt[:50]}...', duration={duration}"
+        )
 
         # TODO: Actual MCP API call
         # For now, simulate generation with delay
@@ -236,9 +247,7 @@ class MCPClipGenerator:
         return output_path
 
     async def generate_all_clips(
-        self,
-        clip_designs: List[Dict[str, Any]],
-        strategies: Optional[List[Dict[str, Any]]] = None
+        self, clip_designs: List[Dict[str, Any]], strategies: Optional[List[Dict[str, Any]]] = None
     ) -> List[GenerationResult]:
         """
         Generate all clips with parallel execution limit.
@@ -251,7 +260,9 @@ class MCPClipGenerator:
             List of GenerationResult
         """
         total_clips = len(clip_designs)
-        logger.info(f"Starting generation of {total_clips} clips (max {self.max_parallel} parallel)...")
+        logger.info(
+            f"Starting generation of {total_clips} clips (max {self.max_parallel} parallel)..."
+        )
 
         # Create semaphore to limit concurrency
         semaphore = asyncio.Semaphore(self.max_parallel)
@@ -262,10 +273,7 @@ class MCPClipGenerator:
                 return await self.generate_clip(clip_design, index, strategy)
 
         # Create tasks for all clips
-        tasks = [
-            generate_with_limit(design, i)
-            for i, design in enumerate(clip_designs)
-        ]
+        tasks = [generate_with_limit(design, i) for i, design in enumerate(clip_designs)]
 
         # Execute with progress tracking
         results = []
@@ -281,7 +289,9 @@ class MCPClipGenerator:
         successful = sum(1 for r in results if r.success)
         failed = total_clips - successful
 
-        logger.info(f"\nGeneration complete: {successful}/{total_clips} successful, {failed} failed")
+        logger.info(
+            f"\nGeneration complete: {successful}/{total_clips} successful, {failed} failed"
+        )
 
         return results
 
@@ -290,9 +300,7 @@ class MCPClipGenerator:
         return [r.clip for r in results if r.success and r.clip]
 
     async def generate_all_clips_sync(
-        self,
-        clip_designs: List[Dict[str, Any]],
-        strategies: Optional[List[Dict[str, Any]]] = None
+        self, clip_designs: List[Dict[str, Any]], strategies: Optional[List[Dict[str, Any]]] = None
     ) -> List[GenerationResult]:
         """
         Synchronous wrapper for generate_all_clips.

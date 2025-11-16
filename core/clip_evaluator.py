@@ -7,7 +7,7 @@ Evaluates generated video clips using CLIP and technical quality checks.
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 from .utils import get_iso_timestamp
 
@@ -16,12 +16,14 @@ logger = logging.getLogger(__name__)
 
 class CLIPEvaluationError(Exception):
     """Raised when CLIP evaluation fails"""
+
     pass
 
 
 @dataclass
 class EvaluationResult:
     """Result of clip evaluation"""
+
     clip_id: int
     clip_path: Path
     overall_score: float
@@ -35,6 +37,7 @@ class EvaluationResult:
 @dataclass
 class TechnicalQuality:
     """Technical quality metrics"""
+
     resolution_score: float
     framerate_score: float
     duration_score: float
@@ -54,7 +57,7 @@ class CLIPEvaluator:
         self,
         clip_model: str = "ViT-B/32",
         similarity_threshold: float = 0.75,
-        technical_threshold: float = 0.70
+        technical_threshold: float = 0.70,
     ):
         """
         Initialize CLIP Evaluator.
@@ -73,11 +76,7 @@ class CLIPEvaluator:
         logger.info(f"CLIPEvaluator initialized: model={clip_model}")
 
     def evaluate_clip(
-        self,
-        video_path: Path,
-        expected_prompt: str,
-        design: Dict[str, Any],
-        mock_mode: bool = True
+        self, video_path: Path, expected_prompt: str, design: Dict[str, Any], mock_mode: bool = True
     ) -> EvaluationResult:
         """
         Evaluate a single clip.
@@ -110,14 +109,11 @@ class CLIPEvaluator:
         clip_similarity = 0.85
         tech_quality = self._check_technical_quality(video_path, design, mock_mode=mock_mode)
 
-        overall_score = (
-            clip_similarity * 0.6 +
-            tech_quality.overall_score * 0.4
-        )
+        overall_score = clip_similarity * 0.6 + tech_quality.overall_score * 0.4
 
         meets_threshold = (
-            clip_similarity >= self.similarity_threshold and
-            tech_quality.overall_score >= self.technical_threshold
+            clip_similarity >= self.similarity_threshold
+            and tech_quality.overall_score >= self.technical_threshold
         )
 
         issues = self._identify_issues(clip_similarity, tech_quality)
@@ -132,18 +128,14 @@ class CLIPEvaluator:
                 "framerate": tech_quality.framerate_score,
                 "duration": tech_quality.duration_score,
                 "codec": tech_quality.codec_score,
-                "overall": tech_quality.overall_score
+                "overall": tech_quality.overall_score,
             },
             meets_threshold=meets_threshold,
-            issues=issues
+            issues=issues,
         )
 
     def _mock_evaluate(
-        self,
-        clip_id: int,
-        video_path: Path,
-        expected_prompt: str,
-        design: Dict[str, Any]
+        self, clip_id: int, video_path: Path, expected_prompt: str, design: Dict[str, Any]
     ) -> EvaluationResult:
         """Mock evaluation for testing"""
         import random
@@ -155,12 +147,14 @@ class CLIPEvaluator:
             framerate_score=0.95,
             duration_score=0.88,
             codec_score=0.92,
-            overall_score=0.91
+            overall_score=0.91,
         )
 
         overall_score = clip_similarity * 0.6 + tech_quality.overall_score * 0.4
 
-        meets_threshold = overall_score >= (self.similarity_threshold + self.technical_threshold) / 2
+        meets_threshold = (
+            overall_score >= (self.similarity_threshold + self.technical_threshold) / 2
+        )
 
         issues = []
         if clip_similarity < 0.80:
@@ -178,17 +172,14 @@ class CLIPEvaluator:
                 "framerate": tech_quality.framerate_score,
                 "duration": tech_quality.duration_score,
                 "codec": tech_quality.codec_score,
-                "overall": tech_quality.overall_score
+                "overall": tech_quality.overall_score,
             },
             meets_threshold=meets_threshold,
-            issues=issues
+            issues=issues,
         )
 
     def _check_technical_quality(
-        self,
-        video_path: Path,
-        design: Dict[str, Any],
-        mock_mode: bool = True
+        self, video_path: Path, design: Dict[str, Any], mock_mode: bool = True
     ) -> TechnicalQuality:
         """Check technical quality of video"""
         if mock_mode:
@@ -197,7 +188,7 @@ class CLIPEvaluator:
                 framerate_score=0.95,
                 duration_score=0.88,
                 codec_score=0.92,
-                overall_score=0.91
+                overall_score=0.91,
             )
 
         # TODO: Actual technical quality checks using ffprobe or similar
@@ -211,19 +202,17 @@ class CLIPEvaluator:
             framerate_score=1.0,
             duration_score=1.0,
             codec_score=1.0,
-            overall_score=1.0
+            overall_score=1.0,
         )
 
-    def _identify_issues(
-        self,
-        clip_similarity: float,
-        tech_quality: TechnicalQuality
-    ) -> List[str]:
+    def _identify_issues(self, clip_similarity: float, tech_quality: TechnicalQuality) -> List[str]:
         """Identify issues from scores"""
         issues = []
 
         if clip_similarity < self.similarity_threshold:
-            issues.append(f"CLIP similarity below threshold ({clip_similarity:.2f} < {self.similarity_threshold})")
+            issues.append(
+                f"CLIP similarity below threshold ({clip_similarity:.2f} < {self.similarity_threshold})"
+            )
 
         if tech_quality.resolution_score < 0.80:
             issues.append("Resolution quality issue")
@@ -235,14 +224,14 @@ class CLIPEvaluator:
             issues.append("Duration mismatch")
 
         if tech_quality.overall_score < self.technical_threshold:
-            issues.append(f"Technical quality below threshold ({tech_quality.overall_score:.2f} < {self.technical_threshold})")
+            issues.append(
+                f"Technical quality below threshold ({tech_quality.overall_score:.2f} < {self.technical_threshold})"
+            )
 
         return issues
 
     def evaluate_all_clips(
-        self,
-        clips: List[Tuple[Path, str, Dict[str, Any]]],
-        mock_mode: bool = True
+        self, clips: List[Tuple[Path, str, Dict[str, Any]]], mock_mode: bool = True
     ) -> List[EvaluationResult]:
         """
         Evaluate all clips.
@@ -289,19 +278,29 @@ class CLIPEvaluator:
         Returns:
             Feedback dictionary for regeneration
         """
-        feedback = {
+        feedback: Dict[str, Any] = {
             "clip_id": result.clip_id,
             "current_score": result.overall_score,
             "issues": result.issues,
-            "suggestions": []
+            "suggestions": [],
         }
 
         # Generate specific suggestions based on issues
         if result.clip_similarity < self.similarity_threshold:
-            feedback["suggestions"].append("Improve prompt adherence - current visual content doesn't match description")
-            feedback["suggestions"].append("Consider adjusting generation parameters for better prompt following")
+            suggestions = feedback["suggestions"]
+            if isinstance(suggestions, list):
+                suggestions.append(
+                    "Improve prompt adherence - current visual content doesn't match description"
+                )
+                suggestions.append(
+                    "Consider adjusting generation parameters for better prompt following"
+                )
 
         if result.technical_quality["overall"] < self.technical_threshold:
-            feedback["suggestions"].append("Improve technical quality - check resolution and encoding settings")
+            suggestions = feedback["suggestions"]
+            if isinstance(suggestions, list):
+                suggestions.append(
+                    "Improve technical quality - check resolution and encoding settings"
+                )
 
         return feedback

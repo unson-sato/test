@@ -6,7 +6,6 @@ Manages session state across all phases.
 
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -19,6 +18,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class PhaseAttempt:
     """Record of a single phase execution attempt"""
+
     attempt_number: int
     started_at: str
     completed_at: Optional[str] = None
@@ -30,6 +30,7 @@ class PhaseAttempt:
 @dataclass
 class PhaseState:
     """State for a single phase"""
+
     phase_number: int
     status: str = "not_started"  # not_started, in_progress, completed, failed
     attempts: List[PhaseAttempt] = field(default_factory=list)
@@ -57,10 +58,7 @@ class SharedState:
         self.state_file = self.session_dir / "state.json"
 
         # Phase states (0-9)
-        self.phases: Dict[int, PhaseState] = {
-            i: PhaseState(phase_number=i)
-            for i in range(10)
-        }
+        self.phases: Dict[int, PhaseState] = {i: PhaseState(phase_number=i) for i in range(10)}
 
         # Session metadata
         self.created_at = get_iso_timestamp()
@@ -71,7 +69,7 @@ class SharedState:
             self._load_state()
 
     @classmethod
-    def load_session(cls, session_id: str) -> 'SharedState':
+    def load_session(cls, session_id: str) -> "SharedState":
         """
         Load an existing session or create a new one.
 
@@ -84,7 +82,7 @@ class SharedState:
         return cls(session_id)
 
     @classmethod
-    def create_session(cls, session_id: str, audio_file: Optional[Path] = None) -> 'SharedState':
+    def create_session(cls, session_id: str, audio_file: Optional[Path] = None) -> "SharedState":
         """
         Create a new session.
 
@@ -99,10 +97,9 @@ class SharedState:
 
         # Initialize Phase 0 with audio file if provided
         if audio_file:
-            state.mark_phase_completed(0, {
-                "audio_file": str(audio_file),
-                "timestamp": get_iso_timestamp()
-            })
+            state.mark_phase_completed(
+                0, {"audio_file": str(audio_file), "timestamp": get_iso_timestamp()}
+            )
 
         state.save()
         return state
@@ -145,10 +142,7 @@ class SharedState:
 
         # Create new attempt
         attempt_number = len(phase.attempts) + 1
-        attempt = PhaseAttempt(
-            attempt_number=attempt_number,
-            started_at=get_iso_timestamp()
-        )
+        attempt = PhaseAttempt(attempt_number=attempt_number, started_at=get_iso_timestamp())
         phase.attempts.append(attempt)
 
         self.updated_at = get_iso_timestamp()
@@ -157,10 +151,7 @@ class SharedState:
         logger.info(f"Phase {phase_number} started (attempt {attempt_number})")
 
     def mark_phase_completed(
-        self,
-        phase_number: int,
-        result: Dict[str, Any],
-        success: bool = True
+        self, phase_number: int, result: Dict[str, Any], success: bool = True
     ) -> None:
         """
         Mark a phase as completed.
@@ -236,10 +227,10 @@ class SharedState:
                     "attempts": len(phase.attempts),
                     "started_at": phase.started_at,
                     "completed_at": phase.completed_at,
-                    "has_result": phase.current_result is not None
+                    "has_result": phase.current_result is not None,
                 }
                 for phase_num, phase in self.phases.items()
-            }
+            },
         }
 
     def save(self) -> None:
@@ -264,13 +255,13 @@ class SharedState:
                             "completed_at": att.completed_at,
                             "success": att.success,
                             "result": att.result,
-                            "error": att.error
+                            "error": att.error,
                         }
                         for att in phase.attempts
-                    ]
+                    ],
                 }
                 for phase_num, phase in self.phases.items()
-            }
+            },
         }
 
         write_json(self.state_file, state_data)
@@ -306,7 +297,7 @@ class SharedState:
                         completed_at=att_data.get("completed_at"),
                         success=att_data.get("success", False),
                         result=att_data.get("result"),
-                        error=att_data.get("error")
+                        error=att_data.get("error"),
                     )
                     for att_data in attempts_data
                 ]

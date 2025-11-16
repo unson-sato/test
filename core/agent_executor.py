@@ -20,18 +20,13 @@ logger = logging.getLogger(__name__)
 
 
 # Director types for Phase 1-4
-PHASE_1_4_DIRECTORS = [
-    "corporate",
-    "freelancer",
-    "veteran",
-    "award_winner",
-    "newcomer"
-]
+PHASE_1_4_DIRECTORS = ["corporate", "freelancer", "veteran", "award_winner", "newcomer"]
 
 
 @dataclass
 class AgentResult:
     """Result from agent execution"""
+
     director_type: str
     success: bool
     output: Dict[str, Any]
@@ -59,14 +54,12 @@ class AgentExecutor:
         """
         self.claude_cli = claude_cli
         self.max_parallel = max_parallel
-        logger.info(f"AgentExecutor initialized: claude_cli={claude_cli}, max_parallel={max_parallel}")
+        logger.info(
+            f"AgentExecutor initialized: claude_cli={claude_cli}, max_parallel={max_parallel}"
+        )
 
     async def run_director_async(
-        self,
-        director_type: str,
-        phase_num: int,
-        context: Dict[str, Any],
-        output_dir: Path
+        self, director_type: str, phase_num: int, context: Dict[str, Any], output_dir: Path
     ) -> Dict[str, Any]:
         """
         Run a single director agent asynchronously.
@@ -86,24 +79,24 @@ class AgentExecutor:
 
         if not prompt_file.exists():
             logger.error(f"Prompt file not found: {prompt_file}")
-            return {
-                "error": f"Prompt file not found: {prompt_file}"
-            }
+            return {"error": f"Prompt file not found: {prompt_file}"}
 
         # Create context file
         output_dir.mkdir(parents=True, exist_ok=True)
         context_file = output_dir / f"{director_type}_context.json"
 
-        with open(context_file, 'w') as f:
+        with open(context_file, "w") as f:
             json.dump(context, f, indent=2)
 
         # Build Claude CLI command
         # claude -p prompt.md --dangerous-skip-permission --output-format json < context.json
         cmd = [
             self.claude_cli,
-            "-p", str(prompt_file),
+            "-p",
+            str(prompt_file),
             "--dangerous-skip-permission",
-            "--output-format", "json"
+            "--output-format",
+            "json",
         ]
 
         logger.debug(f"Running {director_type} agent: {' '.join(cmd)}")
@@ -114,7 +107,7 @@ class AgentExecutor:
                 *cmd,
                 stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
+                stderr=asyncio.subprocess.PIPE,
             )
 
             # Pass context as stdin
@@ -124,9 +117,7 @@ class AgentExecutor:
             if process.returncode != 0:
                 error_msg = stderr.decode() if stderr else "Unknown error"
                 logger.error(f"{director_type} agent failed: {error_msg}")
-                return {
-                    "error": error_msg
-                }
+                return {"error": error_msg}
 
             # Parse output
             output_str = stdout.decode()
@@ -137,30 +128,27 @@ class AgentExecutor:
                 logger.error(f"Failed to parse {director_type} output: {e}")
                 # Try to extract JSON from output
                 import re
-                json_match = re.search(r'\{.*\}', output_str, re.DOTALL)
+
+                json_match = re.search(r"\{.*\}", output_str, re.DOTALL)
                 if json_match:
                     try:
                         output = json.loads(json_match.group())
                         return output
-                    except:
+                    except (json.JSONDecodeError, ValueError):
                         pass
 
-                return {
-                    "error": f"Invalid JSON output: {output_str[:200]}..."
-                }
+                return {"error": f"Invalid JSON output: {output_str[:200]}..."}
 
         except Exception as e:
             logger.error(f"Failed to run {director_type} agent: {e}")
-            return {
-                "error": str(e)
-            }
+            return {"error": str(e)}
 
     async def run_all_directors_parallel(
         self,
         phase_num: int,
         context: Dict[str, Any],
         output_dir: Path,
-        directors: Optional[List[str]] = None
+        directors: Optional[List[str]] = None,
     ) -> List[AgentResult]:
         """
         Run all directors in parallel for a phase.
@@ -182,12 +170,7 @@ class AgentExecutor:
         # Create tasks for all directors
         tasks = []
         for director_type in directors:
-            task = self._run_director_with_timing(
-                director_type,
-                phase_num,
-                context,
-                output_dir
-            )
+            task = self._run_director_with_timing(director_type, phase_num, context, output_dir)
             tasks.append(task)
 
         # Execute all tasks in parallel
@@ -200,12 +183,11 @@ class AgentExecutor:
 
             if isinstance(result, Exception):
                 logger.error(f"  ✗ {director_type}: {result}")
-                agent_results.append(AgentResult(
-                    director_type=director_type,
-                    success=False,
-                    output={},
-                    error=str(result)
-                ))
+                agent_results.append(
+                    AgentResult(
+                        director_type=director_type, success=False, output={}, error=str(result)
+                    )
+                )
             elif isinstance(result, AgentResult):
                 status = "✓" if result.success else "✗"
                 logger.info(f"  {status} {director_type}: {result.execution_time:.1f}s")
@@ -218,11 +200,7 @@ class AgentExecutor:
         return agent_results
 
     async def _run_director_with_timing(
-        self,
-        director_type: str,
-        phase_num: int,
-        context: Dict[str, Any],
-        output_dir: Path
+        self, director_type: str, phase_num: int, context: Dict[str, Any], output_dir: Path
     ) -> AgentResult:
         """
         Run a director with execution time tracking.
@@ -243,7 +221,7 @@ class AgentExecutor:
                 director_type=director_type,
                 phase_num=phase_num,
                 context=context,
-                output_dir=output_dir
+                output_dir=output_dir,
             )
 
             execution_time = time.time() - start_time
@@ -255,14 +233,14 @@ class AgentExecutor:
                     success=False,
                     output=output,
                     error=output["error"],
-                    execution_time=execution_time
+                    execution_time=execution_time,
                 )
 
             return AgentResult(
                 director_type=director_type,
                 success=True,
                 output=output,
-                execution_time=execution_time
+                execution_time=execution_time,
             )
 
         except Exception as e:
@@ -272,5 +250,5 @@ class AgentExecutor:
                 success=False,
                 output={},
                 error=str(e),
-                execution_time=execution_time
+                execution_time=execution_time,
             )

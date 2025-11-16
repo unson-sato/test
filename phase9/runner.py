@@ -15,7 +15,6 @@ from core import (
     ensure_dir,
     write_json,
     get_iso_timestamp,
-    get_project_root
 )
 from core.remotion_renderer import RemotionRenderer, RenderConfig
 
@@ -28,7 +27,7 @@ def run_phase9(
     remotion_project_dir: Optional[Path] = None,
     output_filename: str = "final_output.mp4",
     render_config: Optional[RenderConfig] = None,
-    mock_mode: bool = True
+    mock_mode: bool = True,
 ) -> Dict[str, Any]:
     """
     Run Phase 9: Final rendering with Remotion.
@@ -80,7 +79,7 @@ def run_phase9(
     if not effects_code_path.exists():
         raise ValueError(f"Effects code not found: {effects_code_path}")
 
-    logger.info(f"\nInput files:")
+    logger.info("\nInput files:")
     logger.info(f"  Audio: {audio_path}")
     logger.info(f"  Video sequence: {sequence_path} ({sequence_info['duration']:.1f}s)")
     logger.info(f"  Effects code: {effects_code_path}")
@@ -109,10 +108,10 @@ def run_phase9(
             fps=fps,
             duration_in_frames=duration_frames,
             crf=18,
-            video_bitrate="8M"
+            video_bitrate="8M",
         )
 
-    logger.info(f"\nRender configuration:")
+    logger.info("\nRender configuration:")
     logger.info(f"  Resolution: {render_config.width}x{render_config.height}")
     logger.info(f"  FPS: {render_config.fps}")
     logger.info(f"  Duration: {render_config.duration_in_frames} frames")
@@ -120,13 +119,10 @@ def run_phase9(
     logger.info(f"  CRF: {render_config.crf}")
 
     # Initialize Remotion renderer
-    renderer = RemotionRenderer(
-        remotion_project_dir=remotion_project_dir,
-        mock_mode=mock_mode
-    )
+    renderer = RemotionRenderer(remotion_project_dir=remotion_project_dir, mock_mode=mock_mode)
 
     # Setup Remotion project
-    logger.info(f"\nSetting up Remotion project at {remotion_project_dir}...")
+    logger.info("\nSetting up Remotion project at {}...".format(remotion_project_dir))
 
     setup_success = asyncio.run(
         renderer.setup_project(
@@ -134,7 +130,7 @@ def run_phase9(
             video_sequence_path=sequence_path,
             effects_code_path=effects_code_path,
             audio_path=audio_path,
-            config=render_config
+            config=render_config,
         )
     )
 
@@ -146,14 +142,12 @@ def run_phase9(
     # Render final video
     output_path = output_dir / output_filename
 
-    logger.info(f"\nRendering final video...")
+    logger.info("\nRendering final video...")
     logger.info(f"  Output: {output_path}")
 
     render_result = asyncio.run(
         renderer.render(
-            project_dir=remotion_project_dir,
-            output_path=output_path,
-            config=render_config
+            project_dir=remotion_project_dir, output_path=output_path, config=render_config
         )
     )
 
@@ -162,9 +156,9 @@ def run_phase9(
         raise RuntimeError(f"Rendering failed: {render_result.error}")
 
     # Log results
-    logger.info(f"\n{'=' * 70}")
-    logger.info(f"FINAL RENDER COMPLETE")
-    logger.info(f"{'=' * 70}")
+    logger.info("\n" + "=" * 70)
+    logger.info("FINAL RENDER COMPLETE")
+    logger.info("=" * 70)
     logger.info(f"Output file: {render_result.output_path}")
     logger.info(f"Duration: {render_result.duration:.1f}s")
     logger.info(f"File size: {render_result.file_size / 1024 / 1024:.1f} MB")
@@ -184,16 +178,16 @@ def run_phase9(
             "duration_frames": render_config.duration_in_frames,
             "codec": render_config.codec,
             "crf": render_config.crf,
-            "video_bitrate": render_config.video_bitrate
+            "video_bitrate": render_config.video_bitrate,
         },
         "input_files": {
             "audio": str(audio_path),
             "video_sequence": str(sequence_path),
-            "effects_code": str(effects_code_path)
+            "effects_code": str(effects_code_path),
         },
         "remotion_project_dir": str(remotion_project_dir),
         "success": render_result.success,
-        "timestamp": get_iso_timestamp()
+        "timestamp": get_iso_timestamp(),
     }
 
     # Save results
@@ -202,20 +196,20 @@ def run_phase9(
 
     # Save render logs
     logs_file = output_dir / "render_logs.txt"
-    with open(logs_file, 'w') as f:
+    with open(logs_file, "w") as f:
         f.write(render_result.logs)
 
     # Update session state
     session.mark_phase_started(9)
     session.mark_phase_completed(9, phase9_results)
 
-    logger.info(f"\n✓ Phase 9 completed")
+    logger.info("\n✓ Phase 9 completed")
     logger.info(f"  Results saved to: {result_file}")
     logger.info(f"  Logs saved to: {logs_file}")
 
-    logger.info(f"\n{'=' * 70}")
-    logger.info(f"🎬 MUSIC VIDEO GENERATION COMPLETE!")
-    logger.info(f"{'=' * 70}")
+    logger.info("\n" + "=" * 70)
+    logger.info("🎬 MUSIC VIDEO GENERATION COMPLETE!")
+    logger.info("=" * 70)
     logger.info(f"Final output: {render_result.output_path}")
 
     return phase9_results

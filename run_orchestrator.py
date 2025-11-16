@@ -16,18 +16,19 @@ import asyncio
 import logging
 import sys
 from pathlib import Path
+from typing import Optional
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from core import OrchestratorAgent, PipelineState
+from core import OrchestratorAgent, PipelineState  # noqa: E402
 
 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 
 logger = logging.getLogger(__name__)
@@ -54,62 +55,48 @@ Examples:
 
 After completion, run Phase 5-9 with:
   python3 run_phase5_9.py my_session --mock
-        """
+        """,
     )
 
-    parser.add_argument(
-        'session_id',
-        help='Session identifier'
-    )
+    parser.add_argument("session_id", help="Session identifier")
+
+    parser.add_argument("--audio", type=Path, help="Path to audio file (for Phase 0)")
 
     parser.add_argument(
-        '--audio',
-        type=Path,
-        help='Path to audio file (for Phase 0)'
-    )
-
-    parser.add_argument(
-        '--start-phase',
+        "--start-phase",
         type=int,
         default=0,
         choices=[0, 1, 2, 3, 4],
-        help='Starting phase (default: 0)'
+        help="Starting phase (default: 0)",
     )
 
     parser.add_argument(
-        '--end-phase',
+        "--end-phase",
         type=int,
         default=4,
         choices=[0, 1, 2, 3, 4],
-        help='Ending phase (default: 4)'
+        help="Ending phase (default: 4)",
     )
 
     parser.add_argument(
-        '--threshold',
-        type=float,
-        default=70.0,
-        help='Quality threshold (0-100, default: 70)'
+        "--threshold", type=float, default=70.0, help="Quality threshold (0-100, default: 70)"
     )
 
     parser.add_argument(
-        '--max-iterations',
+        "--max-iterations",
         type=int,
         default=3,
-        help='Maximum feedback iterations per phase (default: 3)'
+        help="Maximum feedback iterations per phase (default: 3)",
     )
 
     parser.add_argument(
-        '--claude-cli',
+        "--claude-cli",
         type=str,
-        default='claude',
-        help='Path to Claude CLI executable (default: claude)'
+        default="claude",
+        help="Path to Claude CLI executable (default: claude)",
     )
 
-    parser.add_argument(
-        '-v', '--verbose',
-        action='store_true',
-        help='Enable verbose logging'
-    )
+    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose logging")
 
     args = parser.parse_args()
 
@@ -126,15 +113,17 @@ After completion, run Phase 5-9 with:
 
     # Run orchestrator
     try:
-        success = asyncio.run(run_orchestrator(
-            session_id=args.session_id,
-            audio_file=args.audio,
-            start_phase=args.start_phase,
-            end_phase=args.end_phase,
-            quality_threshold=args.threshold,
-            max_iterations=args.max_iterations,
-            claude_cli=args.claude_cli
-        ))
+        success = asyncio.run(
+            run_orchestrator(
+                session_id=args.session_id,
+                audio_file=args.audio,
+                start_phase=args.start_phase,
+                end_phase=args.end_phase,
+                quality_threshold=args.threshold,
+                max_iterations=args.max_iterations,
+                claude_cli=args.claude_cli,
+            )
+        )
 
         sys.exit(0 if success else 1)
 
@@ -153,7 +142,7 @@ async def run_orchestrator(
     end_phase: int,
     quality_threshold: float,
     max_iterations: int,
-    claude_cli: str
+    claude_cli: str,
 ) -> bool:
     """
     Run the orchestrator.
@@ -184,7 +173,7 @@ async def run_orchestrator(
         session_id=session_id,
         claude_cli=claude_cli,
         quality_threshold=quality_threshold,
-        max_iterations=max_iterations
+        max_iterations=max_iterations,
     )
 
     # Run pipeline
@@ -196,13 +185,14 @@ async def run_orchestrator(
     elif start_phase == 0:
         # Phase 0 only or Phase 0-X
         logger.info("Running Phase 0 (audio analysis)...")
+        if audio_file is None:
+            raise ValueError("audio_file is required for Phase 0")
         phase0_result = await orchestrator._run_audio_analysis(audio_file)
 
         if end_phase > 0:
             logger.info(f"\nRunning Phase {max(1, start_phase)}-{end_phase}...")
             results = await orchestrator.run_design_phases(
-                start_phase=max(1, start_phase),
-                end_phase=end_phase
+                start_phase=max(1, start_phase), end_phase=end_phase
             )
             results["phase0"] = phase0_result
         else:
@@ -211,10 +201,7 @@ async def run_orchestrator(
     else:
         # Phase 1-4 only
         logger.info(f"Running Phase {start_phase}-{end_phase}...")
-        results = await orchestrator.run_design_phases(
-            start_phase=start_phase,
-            end_phase=end_phase
-        )
+        results = await orchestrator.run_design_phases(start_phase=start_phase, end_phase=end_phase)
 
     # Show summary
     logger.info("\n" + "=" * 80)
@@ -229,23 +216,23 @@ async def run_orchestrator(
     logger.info(f"Completed phases: {summary['progress']['completed_phases']}")
     logger.info(f"Progress: {summary['progress']['progress_percentage']:.1f}%")
 
-    if summary['progress']['design_complete']:
+    if summary["progress"]["design_complete"]:
         logger.info("\n✓ Design phases (1-4) complete!")
         logger.info("\nNext step: Run Phase 5-9 with:")
         logger.info(f"  python3 run_phase5_9.py {session_id} --mock")
     else:
-        logger.info(f"\n⚠ Design incomplete. Run remaining phases to continue.")
+        logger.info("\n⚠ Design incomplete. Run remaining phases to continue.")
 
     # Show validation
-    validation = summary['validation']
-    if validation['warnings']:
+    validation = summary["validation"]
+    if validation["warnings"]:
         logger.warning("\nWarnings:")
-        for warning in validation['warnings']:
+        for warning in validation["warnings"]:
             logger.warning(f"  - {warning}")
 
-    if validation['issues']:
+    if validation["issues"]:
         logger.error("\nIssues:")
-        for issue in validation['issues']:
+        for issue in validation["issues"]:
             logger.error(f"  - {issue}")
         return False
 
@@ -253,5 +240,4 @@ async def run_orchestrator(
 
 
 if __name__ == "__main__":
-    from typing import Optional
     main()

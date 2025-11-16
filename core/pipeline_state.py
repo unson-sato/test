@@ -9,7 +9,7 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from .shared_state import SharedState, PhaseState
+from .shared_state import SharedState
 
 
 logger = logging.getLogger(__name__)
@@ -33,7 +33,7 @@ class PipelineState:
         self.shared_state = SharedState.load_session(session_id)
 
     @classmethod
-    def create(cls, session_id: str, audio_file: Optional[Path] = None) -> 'PipelineState':
+    def create(cls, session_id: str, audio_file: Optional[Path] = None) -> "PipelineState":
         """
         Create new pipeline state.
 
@@ -69,10 +69,7 @@ class PipelineState:
         self.shared_state.mark_phase_started(phase_num)
 
     def mark_phase_completed(
-        self,
-        phase_num: int,
-        result: Dict[str, Any],
-        success: bool = True
+        self, phase_num: int, result: Dict[str, Any], success: bool = True
     ) -> None:
         """
         Mark phase as completed.
@@ -156,11 +153,7 @@ class PipelineState:
                 if not clips:
                     warnings.append("Phase 3 has no clips defined")
 
-        return {
-            "valid": len(issues) == 0,
-            "issues": issues,
-            "warnings": warnings
-        }
+        return {"valid": len(issues) == 0, "issues": issues, "warnings": warnings}
 
     def get_summary(self) -> Dict[str, Any]:
         """
@@ -173,11 +166,7 @@ class PipelineState:
         validation = self.validate_pipeline_state()
         session_summary = self.shared_state.get_session_summary()
 
-        return {
-            **session_summary,
-            "progress": progress,
-            "validation": validation
-        }
+        return {**session_summary, "progress": progress, "validation": validation}
 
     def save(self) -> None:
         """Save pipeline state."""

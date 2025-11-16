@@ -6,10 +6,9 @@ Renders final music video using Remotion with generated effects code.
 
 import asyncio
 import logging
-import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Optional
 
 from .utils import get_iso_timestamp
 
@@ -18,12 +17,14 @@ logger = logging.getLogger(__name__)
 
 class RemotionRenderError(Exception):
     """Raised when Remotion rendering fails"""
+
     pass
 
 
 @dataclass
 class RenderConfig:
     """Configuration for Remotion rendering"""
+
     composition_id: str = "MVOrchestra"
     width: int = 1920
     height: int = 1080
@@ -40,6 +41,7 @@ class RenderConfig:
 @dataclass
 class RenderResult:
     """Result of Remotion rendering"""
+
     success: bool
     output_path: Optional[Path] = None
     duration: float = 0.0
@@ -58,11 +60,7 @@ class RemotionRenderer:
     and renders the final output.
     """
 
-    def __init__(
-        self,
-        remotion_project_dir: Optional[Path] = None,
-        mock_mode: bool = True
-    ):
+    def __init__(self, remotion_project_dir: Optional[Path] = None, mock_mode: bool = True):
         """
         Initialize Remotion Renderer.
 
@@ -77,7 +75,9 @@ class RemotionRenderer:
             # Verify Remotion project exists
             package_json = remotion_project_dir / "package.json"
             if not package_json.exists():
-                logger.warning(f"No package.json found in {remotion_project_dir}. Falling back to mock mode.")
+                logger.warning(
+                    f"No package.json found in {remotion_project_dir}. Falling back to mock mode."
+                )
                 self.mock_mode = True
 
         logger.info(f"RemotionRenderer initialized: mock_mode={self.mock_mode}")
@@ -88,7 +88,7 @@ class RemotionRenderer:
         video_sequence_path: Path,
         effects_code_path: Path,
         audio_path: Path,
-        config: RenderConfig
+        config: RenderConfig,
     ) -> bool:
         """
         Set up Remotion project with video, effects, and audio.
@@ -118,6 +118,7 @@ class RemotionRenderer:
             effects_dest = src_dir / "Effects.tsx"
             if effects_code_path.exists():
                 import shutil
+
                 shutil.copy(effects_code_path, effects_dest)
                 logger.info(f"  ✓ Effects code copied to {effects_dest}")
             else:
@@ -126,20 +127,18 @@ class RemotionRenderer:
 
             # Create Composition.tsx
             composition_code = self._generate_composition_code(
-                video_sequence_path,
-                audio_path,
-                config
+                video_sequence_path, audio_path, config
             )
 
             composition_file = src_dir / "Composition.tsx"
-            with open(composition_file, 'w') as f:
+            with open(composition_file, "w") as f:
                 f.write(composition_code)
             logger.info(f"  ✓ Composition created at {composition_file}")
 
             # Create Root.tsx
             root_code = self._generate_root_code(config)
             root_file = src_dir / "Root.tsx"
-            with open(root_file, 'w') as f:
+            with open(root_file, "w") as f:
                 f.write(root_code)
             logger.info(f"  ✓ Root component created at {root_file}")
 
@@ -152,11 +151,13 @@ class RemotionRenderer:
 
             if video_sequence_path.exists():
                 import shutil
+
                 shutil.copy(video_sequence_path, video_dest)
                 logger.info(f"  ✓ Video sequence copied to {video_dest}")
 
             if audio_path.exists():
                 import shutil
+
                 shutil.copy(audio_path, audio_dest)
                 logger.info(f"  ✓ Audio copied to {audio_dest}")
 
@@ -168,10 +169,7 @@ class RemotionRenderer:
             return False
 
     async def render(
-        self,
-        project_dir: Path,
-        output_path: Path,
-        config: RenderConfig
+        self, project_dir: Path, output_path: Path, config: RenderConfig
     ) -> RenderResult:
         """
         Render final video using Remotion.
@@ -190,19 +188,27 @@ class RemotionRenderer:
             return self._mock_render(output_path, config)
 
         import time
+
         start_time = time.time()
 
         try:
             # Build Remotion CLI command
             cmd = [
-                "npx", "remotion", "render",
+                "npx",
+                "remotion",
+                "render",
                 config.composition_id,
                 str(output_path),
-                "--codec", config.codec,
-                "--crf", str(config.crf),
-                "--audio-codec", config.audio_codec,
-                "--audio-bitrate", config.audio_bitrate,
-                "--video-bitrate", config.video_bitrate
+                "--codec",
+                config.codec,
+                "--crf",
+                str(config.crf),
+                "--audio-codec",
+                config.audio_codec,
+                "--audio-bitrate",
+                config.audio_bitrate,
+                "--video-bitrate",
+                config.video_bitrate,
             ]
 
             if config.duration_in_frames:
@@ -215,12 +221,14 @@ class RemotionRenderer:
                 *cmd,
                 cwd=str(project_dir),
                 stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.STDOUT
+                stderr=asyncio.subprocess.STDOUT,
             )
 
             # Collect output
             output_lines = []
             while True:
+                if process.stdout is None:
+                    break
                 line = await process.stdout.readline()
                 if not line:
                     break
@@ -243,7 +251,7 @@ class RemotionRenderer:
                     success=False,
                     error=f"Render failed with exit code {process.returncode}",
                     logs=logs,
-                    render_time=render_time
+                    render_time=render_time,
                 )
 
             # Verify output exists
@@ -252,7 +260,7 @@ class RemotionRenderer:
                     success=False,
                     error="Output file not created",
                     logs=logs,
-                    render_time=render_time
+                    render_time=render_time,
                 )
 
             # Get file info
@@ -270,26 +278,19 @@ class RemotionRenderer:
                 duration=duration,
                 render_time=render_time,
                 file_size=file_size,
-                logs=logs
+                logs=logs,
             )
 
         except Exception as e:
             render_time = time.time() - start_time
             logger.error(f"Render failed: {e}")
-            return RenderResult(
-                success=False,
-                error=str(e),
-                render_time=render_time
-            )
+            return RenderResult(success=False, error=str(e), render_time=render_time)
 
     def _generate_composition_code(
-        self,
-        video_path: Path,
-        audio_path: Path,
-        config: RenderConfig
+        self, video_path: Path, audio_path: Path, config: RenderConfig
     ) -> str:
         """Generate Composition.tsx code"""
-        return f"""import React from 'react';
+        return """import React from 'react';
 import {{ AbsoluteFill, Video, Audio, useVideoConfig, useCurrentFrame }} from 'remotion';
 import * as Effects from './Effects';
 
@@ -340,17 +341,18 @@ export const RemotionRoot: React.FC = () => {{
         """Get video duration using ffprobe"""
         cmd = [
             "ffprobe",
-            "-v", "error",
-            "-show_entries", "format=duration",
-            "-of", "default=noprint_wrappers=1:nokey=1",
-            str(video_path)
+            "-v",
+            "error",
+            "-show_entries",
+            "format=duration",
+            "-of",
+            "default=noprint_wrappers=1:nokey=1",
+            str(video_path),
         ]
 
         try:
             process = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
+                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
 
             stdout, _ = await process.communicate()
@@ -365,6 +367,7 @@ export const RemotionRoot: React.FC = () => {{
     def _mock_render(self, output_path: Path, config: RenderConfig) -> RenderResult:
         """Mock render operation"""
         import time
+
         logger.info("MOCK: Rendering final video...")
         time.sleep(1)  # Simulate render time
 
@@ -383,5 +386,5 @@ export const RemotionRoot: React.FC = () => {{
             duration=mock_duration,
             render_time=1.0,
             file_size=mock_size,
-            logs="MOCK render logs"
+            logs="MOCK render logs",
         )

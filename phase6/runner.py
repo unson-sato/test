@@ -7,7 +7,7 @@ Evaluates generated clips using CLIP and provides feedback for regeneration.
 import asyncio
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from core import (
     SharedState,
@@ -16,7 +16,7 @@ from core import (
     write_json,
     read_json,
     get_iso_timestamp,
-    get_project_root
+    get_project_root,
 )
 from core.clip_evaluator import CLIPEvaluator, EvaluationResult
 from core.mcp_clip_generator import MCPClipGenerator
@@ -31,7 +31,7 @@ def run_phase6(
     similarity_threshold: float = 0.75,
     technical_threshold: float = 0.70,
     max_regeneration_attempts: int = 2,
-    mock_mode: bool = True
+    mock_mode: bool = True,
 ) -> Dict[str, Any]:
     """
     Run Phase 6: Evaluate clips and regenerate failing ones.
@@ -70,14 +70,16 @@ def run_phase6(
 
     # Get Phase 3 clip designs for context
     phase3_data = session.get_phase_data(3)
-    clip_designs = phase3_data["winner"]["clips"]
+    if not phase3_data or "winner" not in phase3_data:
+        raise ValueError("Phase 3 data not found. Run Phase 3 first.")
+    clip_designs = phase3_data["winner"].get("clips", [])
     clip_designs_by_id = {c["clip_id"]: c for c in clip_designs}
 
     # Initialize CLIP evaluator
     evaluator = CLIPEvaluator(
         clip_model=clip_model,
         similarity_threshold=similarity_threshold,
-        technical_threshold=technical_threshold
+        technical_threshold=technical_threshold,
     )
 
     # Prepare clips for evaluation
@@ -97,7 +99,7 @@ def run_phase6(
     results = evaluator.evaluate_all_clips(clips_to_evaluate, mock_mode=mock_mode)
 
     # Track regeneration history
-    regeneration_history = []
+    regeneration_history: List[Dict[str, Any]] = []
 
     # Regenerate failing clips
     failing_clips = evaluator.get_failing_clips(results)
@@ -113,16 +115,16 @@ def run_phase6(
             clip_designs_by_id=clip_designs_by_id,
             max_attempts=max_regeneration_attempts,
             mock_mode=mock_mode,
-            regeneration_history=regeneration_history
+            regeneration_history=regeneration_history,
         )
 
     # Final statistics
     final_passing = sum(1 for r in results if r.meets_threshold)
     final_failing = len(results) - final_passing
 
-    logger.info(f"\n{'=' * 70}")
-    logger.info(f"FINAL EVALUATION RESULTS")
-    logger.info(f"{'=' * 70}")
+    logger.info("\n" + "=" * 70)
+    logger.info("FINAL EVALUATION RESULTS")
+    logger.info("=" * 70)
     logger.info(f"Total clips: {len(results)}")
     logger.info(f"Passing: {final_passing} ({final_passing/len(results)*100:.1f}%)")
     logger.info(f"Failing: {final_failing} ({final_failing/len(results)*100:.1f}%)")
@@ -142,16 +144,16 @@ def run_phase6(
                 "technical_quality": r.technical_quality,
                 "meets_threshold": r.meets_threshold,
                 "issues": r.issues,
-                "timestamp": r.timestamp
+                "timestamp": r.timestamp,
             }
             for r in results
         ],
         "regeneration_history": regeneration_history,
         "thresholds": {
             "clip_similarity": similarity_threshold,
-            "technical_quality": technical_threshold
+            "technical_quality": technical_threshold,
         },
-        "timestamp": get_iso_timestamp()
+        "timestamp": get_iso_timestamp(),
     }
 
     # Save to session
@@ -163,11 +165,13 @@ def run_phase6(
     session.mark_phase_started(6)
     session.mark_phase_completed(6, phase6_results)
 
-    logger.info(f"\n✓ Phase 6 completed")
+    logger.info("\n✓ Phase 6 completed")
     logger.info(f"  Results saved to: {result_file}")
 
     if final_failing > 0:
-        logger.warning(f"  ⚠ {final_failing} clips still below quality threshold after regeneration")
+        logger.warning(
+            f"  ⚠ {final_failing} clips still below quality threshold after regeneration"
+        )
 
     return phase6_results
 
@@ -179,7 +183,7 @@ def _regenerate_failing_clips(
     clip_designs_by_id: Dict[int, Dict[str, Any]],
     max_attempts: int,
     mock_mode: bool,
-    regeneration_history: List[Dict[str, Any]]
+    regeneration_history: List[Dict[str, Any]],
 ) -> List[EvaluationResult]:
     """
     Regenerate failing clips with feedback.
@@ -212,26 +216,31 @@ def _regenerate_failing_clips(
         mcp_config=mcp_config,
         output_dir=output_dir,
         max_parallel=1,  # Regenerate one at a time
-        max_retries=2
+        max_retries=2,
     )
-
-    # Track all results (passing + regenerated)
-    all_results = []
 
     # Get all original results
     phase5_data = session.get_phase_data(5)
-    generated_clips = phase5_data["clips"]
-    successful_clips = [c for c in generated_clips if c["success"]]
+    if not phase5_data or "clips" not in phase5_data:
+        raise ValueError("Phase 5 data not found. Run Phase 5 first.")
+    generated_clips = phase5_data.get("clips", [])
+    successful_clips = [c for c in generated_clips if c.get("success", False)]
 
     # Create initial evaluation mapping
-    results_by_id = {r.clip_id: r for r in evaluator.evaluate_all_clips(
-        [
-            (Path(c["path"]), clip_designs_by_id[c["clip_id"]].get("prompt", ""),
-             clip_designs_by_id[c["clip_id"]])
-            for c in successful_clips
-        ],
-        mock_mode=mock_mode
-    )}
+    results_by_id = {
+        r.clip_id: r
+        for r in evaluator.evaluate_all_clips(
+            [
+                (
+                    Path(c["path"]),
+                    clip_designs_by_id[c["clip_id"]].get("prompt", ""),
+                    clip_designs_by_id[c["clip_id"]],
+                )
+                for c in successful_clips
+            ],
+            mock_mode=mock_mode,
+        )
+    }
 
     # Regenerate each failing clip
     for failing_result in failing_clips:
@@ -251,13 +260,14 @@ def _regenerate_failing_clips(
         # Attempt regeneration
         best_result = failing_result
 
-        for attempt in range(max_regeneration_attempts):
-            logger.info(f"  Attempt {attempt + 1}/{max_regeneration_attempts}")
+        for attempt in range(max_attempts):
+            logger.info(f"  Attempt {attempt + 1}/{max_attempts}")
 
             # Regenerate
             if mock_mode:
                 # Mock regeneration
                 import time
+
                 time.sleep(0.1)
                 new_path = output_dir / f"clip_{clip_id:03d}_regen_{attempt}.mp4"
                 from core.mcp_clip_generator import VideoClip, GenerationResult
@@ -268,46 +278,41 @@ def _regenerate_failing_clips(
                     design=design,
                     mcp_server="mock_server",
                     generation_time=0.1,
-                    metadata={"regeneration": True, "attempt": attempt, "feedback": feedback}
+                    metadata={"regeneration": True, "attempt": attempt, "feedback": feedback},
                 )
 
                 gen_result = GenerationResult(
-                    clip_id=clip_id,
-                    success=True,
-                    clip=new_clip,
-                    attempts=1,
-                    total_time=0.1
+                    clip_id=clip_id, success=True, clip=new_clip, attempts=1, total_time=0.1
                 )
             else:
                 # Real regeneration via MCP
-                gen_result = asyncio.run(
-                    generator.generate_clip(design, clip_id, strategy, feedback)
-                )
+                gen_result = asyncio.run(generator.generate_clip(design, clip_id, strategy))
 
-            if not gen_result.success:
+            if not gen_result.success or gen_result.clip is None:
                 logger.warning(f"  Regeneration failed: {gen_result.error}")
                 continue
 
             # Evaluate new clip
             new_result = evaluator.evaluate_clip(
-                gen_result.clip.path,
-                design.get("prompt", ""),
-                design,
-                mock_mode=mock_mode
+                gen_result.clip.path, design.get("prompt", ""), design, mock_mode=mock_mode
             )
 
-            logger.info(f"  New score: {new_result.overall_score:.2f} (was {failing_result.overall_score:.2f})")
+            logger.info(
+                f"  New score: {new_result.overall_score:.2f} (was {failing_result.overall_score:.2f})"
+            )
 
             # Track regeneration
-            regeneration_history.append({
-                "clip_id": clip_id,
-                "attempt": attempt + 1,
-                "old_score": failing_result.overall_score,
-                "new_score": new_result.overall_score,
-                "improvement": new_result.overall_score - failing_result.overall_score,
-                "feedback": feedback,
-                "timestamp": get_iso_timestamp()
-            })
+            regeneration_history.append(
+                {
+                    "clip_id": clip_id,
+                    "attempt": attempt + 1,
+                    "old_score": failing_result.overall_score,
+                    "new_score": new_result.overall_score,
+                    "improvement": new_result.overall_score - failing_result.overall_score,
+                    "feedback": feedback,
+                    "timestamp": get_iso_timestamp(),
+                }
+            )
 
             # Keep best result
             if new_result.overall_score > best_result.overall_score:

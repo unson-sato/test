@@ -16,18 +16,16 @@ from core import (
     write_json,
     read_json,
     get_iso_timestamp,
-    get_project_root
+    get_project_root,
 )
-from core.mcp_clip_generator import MCPClipGenerator, GenerationResult
+from core.mcp_clip_generator import MCPClipGenerator
 
 
 logger = logging.getLogger(__name__)
 
 
 def run_phase5(
-    session_id: str,
-    mcp_config: Optional[Dict[str, Any]] = None,
-    mock_mode: bool = True
+    session_id: str, mcp_config: Optional[Dict[str, Any]] = None, mock_mode: bool = True
 ) -> Dict[str, Any]:
     """
     Run Phase 5: Generate clips via MCP.
@@ -79,10 +77,10 @@ def run_phase5(
                     "default": {
                         "endpoint": "http://localhost:8000",
                         "capabilities": ["general"],
-                        "priority": 10
+                        "priority": 10,
                     }
                 },
-                "max_parallel_generations": 3
+                "max_parallel_generations": 3,
             }
 
     # Create output directory
@@ -97,7 +95,7 @@ def run_phase5(
         mcp_config=mcp_config,
         output_dir=output_dir,
         max_parallel=max_parallel,
-        max_retries=max_retries
+        max_retries=max_retries,
     )
 
     # Generate clips
@@ -106,15 +104,13 @@ def run_phase5(
         results = _mock_generate_clips(clip_designs, output_dir)
     else:
         logger.info("Generating clips via MCP...")
-        results = asyncio.run(
-            generator.generate_all_clips(clip_designs, strategies)
-        )
+        results = asyncio.run(generator.generate_all_clips(clip_designs, strategies))
 
     # Process results
     successful_clips = [r for r in results if r.success]
     failed_clips = [r for r in results if not r.success]
 
-    logger.info(f"\nGeneration Summary:")
+    logger.info("\nGeneration Summary:")
     logger.info(f"  Total clips: {len(results)}")
     logger.info(f"  Successful: {len(successful_clips)}")
     logger.info(f"  Failed: {len(failed_clips)}")
@@ -135,12 +131,12 @@ def run_phase5(
                 "mcp_server": r.clip.mcp_server if r.clip else None,
                 "generation_time": r.total_time,
                 "attempts": r.attempts,
-                "error": r.error
+                "error": r.error,
             }
             for r in results
         ],
         "output_directory": str(output_dir),
-        "timestamp": get_iso_timestamp()
+        "timestamp": get_iso_timestamp(),
     }
 
     # Save to session
@@ -152,16 +148,13 @@ def run_phase5(
     session.mark_phase_started(5)
     session.mark_phase_completed(5, phase5_results)
 
-    logger.info(f"\n✓ Phase 5 completed")
+    logger.info("\n✓ Phase 5 completed")
     logger.info(f"  Results saved to: {result_file}")
 
     return phase5_results
 
 
-def _mock_generate_clips(
-    clip_designs: list,
-    output_dir: Path
-) -> list:
+def _mock_generate_clips(clip_designs: list, output_dir: Path) -> list:
     """
     Mock clip generation for testing.
 
@@ -188,20 +181,16 @@ def _mock_generate_clips(
             design=clip_design,
             mcp_server="mock_server",
             generation_time=0.1,
-            metadata={"mock": True}
+            metadata={"mock": True},
         )
 
         result = GenerationResult(
-            clip_id=clip_id,
-            success=True,
-            clip=clip,
-            attempts=1,
-            total_time=0.1
+            clip_id=clip_id, success=True, clip=clip, attempts=1, total_time=0.1
         )
 
         results.append(result)
 
         if (i + 1) % 10 == 0:
-            logger.info(f"  Mock generation progress: {i + 1}/{len(clip_designs)}")
+            logger.info("  Mock generation progress: {}/{}".format(i + 1, len(clip_designs)))
 
     return results

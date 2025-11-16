@@ -19,22 +19,49 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from phase5 import run_phase5
-from phase6 import run_phase6
-from phase7 import run_phase7
-from phase8 import run_phase8
-from phase9 import run_phase9
-from core import SharedState
+from phase5 import run_phase5  # noqa: E402
+from phase6 import run_phase6  # noqa: E402
+from phase7 import run_phase7  # noqa: E402
+from phase8 import run_phase8  # noqa: E402
+from phase9 import run_phase9  # noqa: E402
+from core import SharedState  # noqa: E402
 
 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 
 logger = logging.getLogger(__name__)
+
+# Phase runners mapping
+PHASE_RUNNERS = {
+    5: ("MCP Clip Generation", run_phase5),
+    6: ("CLIP Quality Evaluation", run_phase6),
+    7: ("Video Editing", run_phase7),
+    8: ("Effects Code Generation", run_phase8),
+    9: ("Remotion Final Rendering", run_phase9),
+}
+
+
+def _run_single_phase(
+    phase_num: int, phase_name: str, runner_func, session_id: str, mock_mode: bool, verbose: bool
+) -> bool:
+    """Run a single phase and handle errors."""
+    try:
+        logger.info("\n" + "=" * 80)
+        logger.info(f"RUNNING PHASE {phase_num}: {phase_name}")
+        logger.info("=" * 80)
+
+        runner_func(session_id=session_id, mock_mode=mock_mode)
+
+        logger.info(f"✓ Phase {phase_num} completed successfully")
+        return True
+    except Exception as e:
+        logger.error(f"✗ Phase {phase_num} failed: {e}", exc_info=verbose)
+        return False
 
 
 def run_pipeline(
@@ -42,7 +69,7 @@ def run_pipeline(
     start_phase: int = 5,
     end_phase: int = 9,
     mock_mode: bool = True,
-    verbose: bool = False
+    verbose: bool = False,
 ):
     """
     Run the Phase 5-9 pipeline.
@@ -64,7 +91,7 @@ def run_pipeline(
     logger.info(f"Mock mode: {mock_mode}")
     logger.info("")
 
-    # Load session
+    # Load and validate session
     try:
         session = SharedState.load_session(session_id)
         logger.info(f"Loaded session: {session_id}")
@@ -72,103 +99,24 @@ def run_pipeline(
         logger.error(f"Failed to load session: {e}")
         return False
 
-    # Check prerequisites
-    phase0_data = session.get_phase_data(0)
-    if not phase0_data:
+    if not session.get_phase_data(0):
         logger.error("Phase 0 (audio analysis) not found. Please run Phase 0 first.")
         return False
 
-    # Phase 5: MCP Clip Generation
-    if start_phase <= 5 <= end_phase:
-        try:
-            logger.info("\n" + "=" * 80)
-            logger.info("RUNNING PHASE 5: MCP Clip Generation")
-            logger.info("=" * 80)
+    # Run phases in sequence
+    for phase_num in range(start_phase, end_phase + 1):
+        if phase_num in PHASE_RUNNERS:
+            phase_name, runner_func = PHASE_RUNNERS[phase_num]
+            if not _run_single_phase(
+                phase_num, phase_name, runner_func, session_id, mock_mode, verbose
+            ):
+                return False
 
-            run_phase5(
-                session_id=session_id,
-                mock_mode=mock_mode
-            )
-
-            logger.info("✓ Phase 5 completed successfully")
-        except Exception as e:
-            logger.error(f"✗ Phase 5 failed: {e}", exc_info=verbose)
-            return False
-
-    # Phase 6: CLIP Quality Evaluation
-    if start_phase <= 6 <= end_phase:
-        try:
-            logger.info("\n" + "=" * 80)
-            logger.info("RUNNING PHASE 6: CLIP Quality Evaluation")
-            logger.info("=" * 80)
-
-            run_phase6(
-                session_id=session_id,
-                mock_mode=mock_mode
-            )
-
-            logger.info("✓ Phase 6 completed successfully")
-        except Exception as e:
-            logger.error(f"✗ Phase 6 failed: {e}", exc_info=verbose)
-            return False
-
-    # Phase 7: Video Editing
-    if start_phase <= 7 <= end_phase:
-        try:
-            logger.info("\n" + "=" * 80)
-            logger.info("RUNNING PHASE 7: Video Editing")
-            logger.info("=" * 80)
-
-            run_phase7(
-                session_id=session_id,
-                mock_mode=mock_mode
-            )
-
-            logger.info("✓ Phase 7 completed successfully")
-        except Exception as e:
-            logger.error(f"✗ Phase 7 failed: {e}", exc_info=verbose)
-            return False
-
-    # Phase 8: Effects Code Generation
-    if start_phase <= 8 <= end_phase:
-        try:
-            logger.info("\n" + "=" * 80)
-            logger.info("RUNNING PHASE 8: Effects Code Generation")
-            logger.info("=" * 80)
-
-            run_phase8(
-                session_id=session_id,
-                mock_mode=mock_mode
-            )
-
-            logger.info("✓ Phase 8 completed successfully")
-        except Exception as e:
-            logger.error(f"✗ Phase 8 failed: {e}", exc_info=verbose)
-            return False
-
-    # Phase 9: Remotion Final Rendering
-    if start_phase <= 9 <= end_phase:
-        try:
-            logger.info("\n" + "=" * 80)
-            logger.info("RUNNING PHASE 9: Remotion Final Rendering")
-            logger.info("=" * 80)
-
-            run_phase9(
-                session_id=session_id,
-                mock_mode=mock_mode
-            )
-
-            logger.info("✓ Phase 9 completed successfully")
-        except Exception as e:
-            logger.error(f"✗ Phase 9 failed: {e}", exc_info=verbose)
-            return False
-
-    # Success
+    # Success - show final output
     logger.info("\n" + "=" * 80)
     logger.info("🎬 PIPELINE COMPLETED SUCCESSFULLY!")
     logger.info("=" * 80)
 
-    # Show final output
     session = SharedState.load_session(session_id)
     phase9_data = session.get_phase_data(9)
     if phase9_data and "output_file" in phase9_data:
@@ -197,49 +145,39 @@ Examples:
 
   # Run with verbose logging
   python3 run_phase5_9.py my_session --mock -v
-        """
+        """,
     )
 
-    parser.add_argument(
-        'session_id',
-        help='Session identifier'
-    )
+    parser.add_argument("session_id", help="Session identifier")
 
     parser.add_argument(
-        '--start-phase',
+        "--start-phase",
         type=int,
         default=5,
         choices=[5, 6, 7, 8, 9],
-        help='Starting phase (default: 5)'
+        help="Starting phase (default: 5)",
     )
 
     parser.add_argument(
-        '--end-phase',
+        "--end-phase",
         type=int,
         default=9,
         choices=[5, 6, 7, 8, 9],
-        help='Ending phase (default: 9)'
+        help="Ending phase (default: 9)",
     )
 
     parser.add_argument(
-        '--mock',
-        action='store_true',
-        default=True,
-        help='Use mock mode (default: True)'
+        "--mock", action="store_true", default=True, help="Use mock mode (default: True)"
     )
 
     parser.add_argument(
-        '--no-mock',
-        action='store_false',
-        dest='mock',
-        help='Disable mock mode (requires external dependencies)'
+        "--no-mock",
+        action="store_false",
+        dest="mock",
+        help="Disable mock mode (requires external dependencies)",
     )
 
-    parser.add_argument(
-        '-v', '--verbose',
-        action='store_true',
-        help='Enable verbose logging'
-    )
+    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose logging")
 
     args = parser.parse_args()
 
@@ -253,7 +191,7 @@ Examples:
         start_phase=args.start_phase,
         end_phase=args.end_phase,
         mock_mode=args.mock,
-        verbose=args.verbose
+        verbose=args.verbose,
     )
 
     sys.exit(0 if success else 1)

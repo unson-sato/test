@@ -6,7 +6,6 @@ Generates Remotion effects code using multiple agents with different styles.
 
 import logging
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from .utils import get_iso_timestamp
@@ -16,12 +15,14 @@ logger = logging.getLogger(__name__)
 
 class EffectsGenerationError(Exception):
     """Raised when effects code generation fails"""
+
     pass
 
 
 @dataclass
 class EffectsCode:
     """Generated Remotion effects code"""
+
     agent_name: str
     code: str
     effects_list: List[str]
@@ -35,6 +36,7 @@ class EffectsCode:
 @dataclass
 class EffectsEvaluation:
     """Evaluation of generated effects code"""
+
     winner: str
     winner_code: EffectsCode
     scores: Dict[str, float]
@@ -76,7 +78,7 @@ class EffectsGenerator:
         required_patterns = [
             "import",  # Must have imports
             "export",  # Must export
-            "React",   # Must use React
+            "React",  # Must use React
         ]
 
         for pattern in required_patterns:
@@ -130,7 +132,7 @@ class EffectsGenerator:
         """
         # Simple heuristics for complexity
         lines = code.split("\n")
-        non_empty_lines = [l for l in lines if l.strip()]
+        non_empty_lines = [line for line in lines if line.strip()]
 
         # Factors:
         # - Number of lines
@@ -171,9 +173,16 @@ class EffectsGenerator:
         variety_score = min(len(effects_list) / 10.0, 1.0)  # Normalize to 10 effects
 
         creative_keywords = [
-            "transform", "rotate", "scale", "skew",
-            "blend", "composite", "filter",
-            "gradient", "mask", "clipPath"
+            "transform",
+            "rotate",
+            "scale",
+            "skew",
+            "blend",
+            "composite",
+            "filter",
+            "gradient",
+            "mask",
+            "clipPath",
         ]
         creative_count = sum(code.count(kw) for kw in creative_keywords)
         creative_score = min(creative_count / 15.0, 1.0)  # Normalize to 15 uses
@@ -246,13 +255,11 @@ class EffectsGenerator:
             reasoning=reasoning,
             complexity_score=complexity_score,
             creativity_score=creativity_score,
-            performance_score=performance_score
+            performance_score=performance_score,
         )
 
     def select_best_effects(
-        self,
-        effects_codes: List[EffectsCode],
-        evaluation_output: Dict[str, Any]
+        self, effects_codes: List[EffectsCode], evaluation_output: Dict[str, Any]
     ) -> EffectsEvaluation:
         """
         Select best effects code based on evaluation.
@@ -286,14 +293,14 @@ class EffectsGenerator:
             winner_code=winner_code,
             scores=scores,
             reasoning=reasoning,
-            partial_adoptions=partial_adoptions
+            partial_adoptions=partial_adoptions,
         )
 
     def merge_effects_code(
         self,
         base_code: EffectsCode,
         adoptions: List[Dict[str, Any]],
-        all_codes: Optional[List[EffectsCode]] = None
+        all_codes: Optional[List[EffectsCode]] = None,
     ) -> str:
         """
         Merge effects code with partial adoptions.
@@ -309,11 +316,13 @@ class EffectsGenerator:
         if not adoptions:
             return base_code.code
 
-        logger.info(f"Merging {len(adoptions)} partial adoptions into {base_code.agent_name}'s code")
+        logger.info(
+            f"Merging {len(adoptions)} partial adoptions into {base_code.agent_name}'s code"
+        )
 
         # Extract components from base code
         base_imports = self._extract_imports(base_code.code)
-        base_components = self._extract_components(base_code.code)
+        # base_components is not used in merge, so we skip extraction
 
         # Collect additional components from adoptions
         additional_components = []
@@ -335,11 +344,9 @@ class EffectsGenerator:
                 # Extract specific component if feature name is given
                 component = self._extract_component_by_name(source_code.code, feature)
                 if component:
-                    additional_components.append({
-                        "name": feature,
-                        "code": component,
-                        "source": source
-                    })
+                    additional_components.append(
+                        {"name": feature, "code": component, "source": source}
+                    )
 
                     # Extract imports from source
                     source_imports = self._extract_imports(source_code.code)
@@ -373,7 +380,7 @@ class EffectsGenerator:
             merged_parts.append("\n// Adopted effects")
             for comp in additional_components:
                 merged_parts.append(f"\n// {comp['name']} (from {comp['source']})")
-                merged_parts.append(comp['code'])
+                merged_parts.append(comp["code"])
 
         merged_code = "\n".join(merged_parts)
         return merged_code
@@ -381,23 +388,26 @@ class EffectsGenerator:
     def _extract_imports(self, code: str) -> List[str]:
         """Extract import statements from TypeScript code."""
         import re
-        import_pattern = r'^import\s+.*?;$'
+
+        import_pattern = r"^import\s+.*?;$"
         imports = re.findall(import_pattern, code, re.MULTILINE)
         return imports
 
     def _extract_components(self, code: str) -> List[str]:
         """Extract component names from TypeScript code."""
         import re
+
         # Match: export const ComponentName or export function ComponentName
-        pattern = r'export\s+(?:const|function)\s+([A-Z][a-zA-Z0-9]+)'
+        pattern = r"export\s+(?:const|function)\s+([A-Z][a-zA-Z0-9]+)"
         matches = re.findall(pattern, code)
         return matches
 
     def _extract_components_code(self, code: str) -> str:
         """Extract all component code (everything after imports)."""
         import re
+
         # Remove imports
-        code_without_imports = re.sub(r'^import\s+.*?;$', '', code, flags=re.MULTILINE)
+        code_without_imports = re.sub(r"^import\s+.*?;$", "", code, flags=re.MULTILINE)
         # Remove leading empty lines
         code_without_imports = code_without_imports.lstrip()
         return code_without_imports
@@ -417,7 +427,7 @@ class EffectsGenerator:
 
         # Try to find component by exact name first
         # Pattern: export const/function ComponentName = ...
-        pattern = rf'(export\s+(?:const|function)\s+{re.escape(component_name)}[^=]*=.*?)(?=\nexport|\ninterface|\ntype|\Z)'
+        pattern = rf"(export\s+(?:const|function)\s+{re.escape(component_name)}[^=]*=.*?)(?=\nexport|\ninterface|\ntype|\Z)"
 
         match = re.search(pattern, code, re.DOTALL)
         if match:
@@ -427,7 +437,7 @@ class EffectsGenerator:
         components = self._extract_components(code)
         for comp in components:
             if component_name.lower() in comp.lower():
-                pattern = rf'(export\s+(?:const|function)\s+{re.escape(comp)}[^=]*=.*?)(?=\nexport|\ninterface|\ntype|\Z)'
+                pattern = rf"(export\s+(?:const|function)\s+{re.escape(comp)}[^=]*=.*?)(?=\nexport|\ninterface|\ntype|\Z)"
                 match = re.search(pattern, code, re.DOTALL)
                 if match:
                     logger.info(f"Found partial match: {comp} for {component_name}")

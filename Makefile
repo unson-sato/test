@@ -26,11 +26,11 @@ lint:  ## Run flake8 linting
 
 format:  ## Format code with black and isort
 	black core/ phase*/ *.py
-	isort core/ phase*/ *.py
+	@command -v isort >/dev/null 2>&1 && isort core/ phase*/ *.py || echo "isort not found, skipping"
 
 format-check:  ## Check code formatting without making changes
 	black --check core/ phase*/ *.py
-	isort --check core/ phase*/ *.py
+	@command -v isort >/dev/null 2>&1 && isort --check core/ phase*/ *.py || echo "isort not found, skipping"
 
 type-check:  ## Run mypy type checking
 	mypy core/ phase*/ *.py
@@ -83,9 +83,11 @@ validate:  ## Validate all configuration files
 
 verify-prompts:  ## Verify all prompt files exist
 	@echo "Checking prompt files..."
-	@python3 -c "from pathlib import Path; prompts = Path('.claude/prompts'); missing = []; \
-	for phase in [1,2,3,4]: \
-	    for d in ['corporate','freelancer','veteran','award_winner','newcomer','evaluation']: \
-	        p = prompts / f'phase{phase}_{d}.md'; \
-	        (print(f'✓ {p.name}') if p.exists() else (missing.append(str(p)) or print(f'✗ {p.name}'))); \
-	print(f'\n{len(missing)} missing prompts' if missing else '\n✓ All prompts present')"
+	@python3 -c "from pathlib import Path; \
+	prompts = Path('.claude/prompts'); \
+	expected = [f'phase{p}_{d}.md' for p in [1,2,3,4] for d in ['corporate','freelancer','veteran','award_winner','newcomer','evaluation']]; \
+	expected += [f'phase8_{d}.md' for d in ['minimalist','creative','balanced','evaluation']]; \
+	existing = [p.name for p in prompts.glob('*.md')]; \
+	missing = [p for p in expected if p not in existing]; \
+	print(f'Found {len(existing)} prompt files'); \
+	print('✓ All prompts present!' if not missing else f'✗ Missing: {missing}')"

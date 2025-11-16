@@ -14,11 +14,9 @@ from core import (
     get_session_dir,
     ensure_dir,
     write_json,
-    read_json,
     get_iso_timestamp,
-    get_project_root
 )
-from core.video_editor import VideoEditor, TrimSpec, MergeSpec
+from core.video_editor import VideoEditor, MergeSpec
 
 
 logger = logging.getLogger(__name__)
@@ -29,7 +27,7 @@ def run_phase7(
     max_parallel_trims: int = 3,
     transition_duration: float = 0.0,
     transition_type: str = "none",
-    mock_mode: bool = True
+    mock_mode: bool = True,
 ) -> Dict[str, Any]:
     """
     Run Phase 7: Trim and merge video clips.
@@ -67,11 +65,15 @@ def run_phase7(
 
     # Get Phase 3 clip designs
     phase3_data = session.get_phase_data(3)
-    clip_designs = phase3_data["winner"]["clips"]
+    if not phase3_data or "winner" not in phase3_data:
+        raise ValueError("Phase 3 data not found. Run Phase 3 first.")
+    clip_designs = phase3_data["winner"].get("clips", [])
 
     # Get Phase 2 section division for merging
     phase2_data = session.get_phase_data(2)
-    sections = phase2_data["winner"]["sections"]
+    if not phase2_data or "winner" not in phase2_data:
+        raise ValueError("Phase 2 data not found. Run Phase 2 first.")
+    sections = phase2_data["winner"].get("sections", [])
 
     logger.info(f"Video structure: {len(sections)} sections, {len(passing_clips)} clips")
 
@@ -85,12 +87,10 @@ def run_phase7(
     editor = VideoEditor(mock_mode=mock_mode)
 
     # Step 1: Trim all clips
-    logger.info(f"\nStep 1: Trimming clips to exact durations...")
+    logger.info("\nStep 1: Trimming clips to exact durations...")
     trim_specs = editor.create_trim_specs(passing_clips, clip_designs, trim_dir)
 
-    trim_results = asyncio.run(
-        editor.trim_all_clips(trim_specs, max_parallel=max_parallel_trims)
-    )
+    trim_results = asyncio.run(editor.trim_all_clips(trim_specs, max_parallel=max_parallel_trims))
 
     successful_trims = [r for r in trim_results if r.success]
     failed_trims = [r for r in trim_results if not r.success]
@@ -101,18 +101,14 @@ def run_phase7(
         logger.warning(f"  {len(failed_trims)} clips failed to trim")
 
     # Step 2: Organize clips by section
-    logger.info(f"\nStep 2: Organizing clips by section...")
-    clips_by_section = _organize_clips_by_section(
-        successful_trims,
-        clip_designs,
-        sections
-    )
+    logger.info("\nStep 2: Organizing clips by section...")
+    clips_by_section = _organize_clips_by_section(successful_trims, clip_designs, sections)
 
     logger.info(f"Organized into {len(clips_by_section)} sections")
 
     # Step 3: Merge clips within each section
-    logger.info(f"\nStep 3: Merging clips within sections...")
-    section_merges = []
+    logger.info("\nStep 3: Merging clips within sections...")
+    section_merges: List[Dict[str, Any]] = []
 
     for section_id, section_clips in clips_by_section.items():
         if not section_clips:
@@ -129,7 +125,7 @@ def run_phase7(
             clips=[Path(c["path"]) for c in section_clips],
             output_path=merge_dir / f"section_{section_id:03d}.mp4",
             transition_duration=transition_duration,
-            transition_type=transition_type
+            transition_type=transition_type,
         )
 
         # Merge
@@ -137,26 +133,29 @@ def run_phase7(
 
         if merge_result.success:
             logger.info(f"    ✓ Section {section_id}: {merge_result.duration:.1f}s")
-            section_merges.append({
-                "section_id": section_id,
-                "path": str(merge_result.output_path),
-                "duration": merge_result.duration,
-                "clip_count": len(section_clips),
-                "clips": [c["clip_id"] for c in section_clips]
-            })
+            section_merges.append(
+                {
+                    "section_id": section_id,
+                    "path": str(merge_result.output_path),
+                    "duration": merge_result.duration,
+                    "clip_count": len(section_clips),
+                    "clips": [c["clip_id"] for c in section_clips],
+                }
+            )
         else:
             logger.error(f"    ✗ Section {section_id}: {merge_result.error}")
 
     # Step 4: Merge all sections into final sequence (optional)
-    final_merge_path = None
+    final_merge_path: Optional[str] = None
+    total_duration: float = 0.0
     if len(section_merges) > 1:
-        logger.info(f"\nStep 4: Merging all sections into final sequence...")
+        logger.info("\nStep 4: Merging all sections into final sequence...")
 
         final_spec = MergeSpec(
-            clips=[Path(s["path"]) for s in section_merges],
+            clips=[Path(str(s.get("path", ""))) for s in section_merges],
             output_path=merge_dir / "full_sequence.mp4",
             transition_duration=transition_duration,
-            transition_type=transition_type
+            transition_type=transition_type,
         )
 
         final_result = asyncio.run(editor.merge_clips(final_spec))
@@ -164,15 +163,17 @@ def run_phase7(
         if final_result.success:
             final_merge_path = str(final_result.output_path)
             total_duration = final_result.duration
-            logger.info(f"  ✓ Final sequence: {total_duration:.1f}s ({len(section_merges)} sections)")
+            logger.info(
+                f"  ✓ Final sequence: {total_duration:.1f}s ({len(section_merges)} sections)"
+            )
         else:
             logger.error(f"  ✗ Final merge failed: {final_result.error}")
-            total_duration = sum(s["duration"] for s in section_merges)
+            total_duration = sum(float(s.get("duration", 0.0)) for s in section_merges)
     else:
         # Only one section, use it as final output
         if section_merges:
-            final_merge_path = section_merges[0]["path"]
-            total_duration = section_merges[0]["duration"]
+            final_merge_path = str(section_merges[0].get("path", ""))
+            total_duration = float(section_merges[0].get("duration", 0.0))
             logger.info(f"Single section video: {total_duration:.1f}s")
         else:
             total_duration = 0.0
@@ -182,9 +183,9 @@ def run_phase7(
     successful_clips = len(successful_trims)
     total_sections = len(section_merges)
 
-    logger.info(f"\n{'=' * 70}")
-    logger.info(f"EDITING SUMMARY")
-    logger.info(f"{'=' * 70}")
+    logger.info("\n" + "=" * 70)
+    logger.info("EDITING SUMMARY")
+    logger.info("=" * 70)
     logger.info(f"Trimmed clips: {successful_clips}/{total_clips}")
     logger.info(f"Merged sections: {total_sections}/{len(sections)}")
     logger.info(f"Total duration: {total_duration:.1f}s")
@@ -200,7 +201,7 @@ def run_phase7(
                 "success": result.success,
                 "path": str(result.output_path) if result.output_path else None,
                 "duration": result.duration,
-                "error": result.error
+                "error": result.error,
             }
             for spec, result in zip(trim_specs, trim_results)
         ],
@@ -208,13 +209,10 @@ def run_phase7(
         "final_sequence": {
             "path": final_merge_path,
             "duration": total_duration,
-            "section_count": len(section_merges)
+            "section_count": len(section_merges),
         },
-        "transition_settings": {
-            "duration": transition_duration,
-            "type": transition_type
-        },
-        "timestamp": get_iso_timestamp()
+        "transition_settings": {"duration": transition_duration, "type": transition_type},
+        "timestamp": get_iso_timestamp(),
     }
 
     # Save to session
@@ -226,7 +224,7 @@ def run_phase7(
     session.mark_phase_started(7)
     session.mark_phase_completed(7, phase7_results)
 
-    logger.info(f"\n✓ Phase 7 completed")
+    logger.info("\n✓ Phase 7 completed")
     logger.info(f"  Results saved to: {result_file}")
 
     if final_merge_path:
@@ -236,9 +234,7 @@ def run_phase7(
 
 
 def _organize_clips_by_section(
-    trim_results: List,
-    clip_designs: List[Dict[str, Any]],
-    sections: List[Dict[str, Any]]
+    trim_results: List, clip_designs: List[Dict[str, Any]], sections: List[Dict[str, Any]]
 ) -> Dict[int, List[Dict[str, Any]]]:
     """
     Organize trimmed clips by their sections.
@@ -263,7 +259,7 @@ def _organize_clips_by_section(
                     continue
 
     # Initialize sections
-    clips_by_section = {i: [] for i in range(len(sections))}
+    clips_by_section: Dict[int, List[Dict[str, Any]]] = {i: [] for i in range(len(sections))}
 
     # Assign clips to sections
     for clip_id, result in results_by_id.items():
@@ -274,11 +270,13 @@ def _organize_clips_by_section(
         # Get section_id from design
         section_id = design.get("section_id", 0)
 
-        clips_by_section[section_id].append({
-            "clip_id": clip_id,
-            "path": str(result.output_path),
-            "duration": result.duration,
-            "design": design
-        })
+        clips_by_section[section_id].append(
+            {
+                "clip_id": clip_id,
+                "path": str(result.output_path),
+                "duration": result.duration,
+                "design": design,
+            }
+        )
 
     return clips_by_section

@@ -9,7 +9,7 @@ import json
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from .utils import get_project_root, get_iso_timestamp
 
@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class SelectionResult:
     """Result of evaluation and winner selection"""
+
     winner_name: str
     winner_output: Dict[str, Any]
     scores: Dict[str, float]
@@ -47,14 +48,14 @@ class EvaluationAgent:
             claude_cli: Path to Claude CLI executable
         """
         self.claude_cli = claude_cli
-        logger.info(f"EvaluationAgent initialized")
+        logger.info("EvaluationAgent initialized")
 
     async def evaluate_and_select(
         self,
         phase_num: int,
         submissions: List[Dict[str, Any]],
         context: Dict[str, Any],
-        output_dir: Path
+        output_dir: Path,
     ) -> SelectionResult:
         """
         Evaluate all submissions and select winner.
@@ -80,25 +81,23 @@ class EvaluationAgent:
             return self._fallback_evaluation(submissions)
 
         # Build evaluation context
-        eval_context = {
-            **context,
-            "submissions": submissions,
-            "phase": phase_num
-        }
+        eval_context = {**context, "submissions": submissions, "phase": phase_num}
 
         # Create context file
         output_dir.mkdir(parents=True, exist_ok=True)
         context_file = output_dir / "evaluation_context.json"
 
-        with open(context_file, 'w') as f:
+        with open(context_file, "w") as f:
             json.dump(eval_context, f, indent=2)
 
         # Build Claude CLI command
         cmd = [
             self.claude_cli,
-            "-p", str(prompt_file),
+            "-p",
+            str(prompt_file),
             "--dangerous-skip-permission",
-            "--output-format", "json"
+            "--output-format",
+            "json",
         ]
 
         logger.debug(f"Running evaluation: {' '.join(cmd)}")
@@ -109,7 +108,7 @@ class EvaluationAgent:
                 *cmd,
                 stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
+                stderr=asyncio.subprocess.PIPE,
             )
 
             # Pass context as stdin
@@ -129,11 +128,12 @@ class EvaluationAgent:
                 logger.error("Failed to parse evaluation output")
                 # Try to extract JSON
                 import re
-                json_match = re.search(r'\{.*\}', output_str, re.DOTALL)
+
+                json_match = re.search(r"\{.*\}", output_str, re.DOTALL)
                 if json_match:
                     try:
                         eval_output = json.loads(json_match.group())
-                    except:
+                    except (json.JSONDecodeError, ValueError):
                         return self._fallback_evaluation(submissions)
                 else:
                     return self._fallback_evaluation(submissions)
@@ -141,7 +141,7 @@ class EvaluationAgent:
             # Parse selection result
             result = self._parse_evaluation_output(eval_output, submissions)
 
-            logger.info(f"✓ Evaluation complete")
+            logger.info("✓ Evaluation complete")
             logger.info(f"  Winner: {result.winner_name}")
             logger.info(f"  Scores: {result.scores}")
 
@@ -152,9 +152,7 @@ class EvaluationAgent:
             return self._fallback_evaluation(submissions)
 
     def _parse_evaluation_output(
-        self,
-        eval_output: Dict[str, Any],
-        submissions: List[Dict[str, Any]]
+        self, eval_output: Dict[str, Any], submissions: List[Dict[str, Any]]
     ) -> SelectionResult:
         """
         Parse evaluation output into SelectionResult.
@@ -185,19 +183,18 @@ class EvaluationAgent:
             if submissions:
                 winner_output = submissions[0].get("output", {})
                 winner_name = submissions[0].get("director_type", "unknown")
+            else:
+                winner_output = {}
 
         return SelectionResult(
             winner_name=winner_name,
-            winner_output=winner_output,
+            winner_output=winner_output or {},
             scores=scores,
             reasoning=reasoning,
-            partial_adoptions=partial_adoptions
+            partial_adoptions=partial_adoptions,
         )
 
-    def _fallback_evaluation(
-        self,
-        submissions: List[Dict[str, Any]]
-    ) -> SelectionResult:
+    def _fallback_evaluation(self, submissions: List[Dict[str, Any]]) -> SelectionResult:
         """
         Fallback evaluation using simple scoring.
 
@@ -214,7 +211,7 @@ class EvaluationAgent:
                 winner_name="none",
                 winner_output={},
                 scores={},
-                reasoning="No submissions to evaluate"
+                reasoning="No submissions to evaluate",
             )
 
         # Simple scoring: prefer successful submissions, then first one
@@ -242,7 +239,7 @@ class EvaluationAgent:
             winner_name=winner_name,
             winner_output=winner_output,
             scores=scores,
-            reasoning=f"Fallback evaluation: selected {winner_name}"
+            reasoning=f"Fallback evaluation: selected {winner_name}",
         )
 
     def calculate_score(self, result: SelectionResult) -> float:
